@@ -3,8 +3,8 @@
 from content_lipt import *          # noqa: F401,F403  (N, ci, METHODS, RESULTS, sup, fh, dW ...)
 import content_lipt as _B
 _LK = _B._LK
-TITLE = "Does lipid-lowering treatment in Korea follow lipid risk or access to care? A nationwide district-level analysis of health screening, 2011–2024"
-RUNNING = "Lipid risk or access in dyslipidemia treatment"
+TITLE = "Is self-reported treated dyslipidemia among Korean health-screening attendees associated with district education rather than lifestyle risk factors? A nationwide district-level analysis, 2011–2024"
+RUNNING = "Education, lifestyle and treated dyslipidemia"
 assert ":" not in TITLE and "229" not in TITLE and "standardi" not in TITLE.lower() and len(RUNNING) <= 50
 KEYWORDS = "Dyslipidemias; Health services accessibility; Educational status; Spatial analysis; Republic of Korea"
 assert len(KEYWORDS.split(";")) <= 5
@@ -19,3 +19,19 @@ _old = f"in both windows and with resident-based expected numbers, but not with 
 _new = f"in both windows (2011–2017 {tci(_w1)}; 2018–2024 {tci(_w2)}) and with resident-based expected numbers, but not with 1-year ({tci(_l1)}) or 2-year lagged covariates ({tci(_l2)})"
 RESULTS = [(h, t.replace(_old, _new)) for h, t in _B.RESULTS]
 assert sum(_new in t for _, t in RESULTS) == 1
+
+# review 반영(2026-11-16): 용어·과장 정리
+_SUBS = [("Lipid risk factors: obesity", "Lifestyle-related risk factors: obesity"),
+         ("sex-specific models were not possible because district covariates are not reported by sex, and sex is reported following", "sex-specific associations were not examined because district covariates are not reported by sex, and sex is reported following"),
+         (f"Intervals were not adjusted for multiplicity; as a rough frequentist analogy, about {_B.EXP_CHANCE:.2f} of the {_B.NHYP} associations would exclude 1 by chance if all were null.", "Intervals were not adjusted for multiplicity, and associations were interpreted in light of the number of comparisons and the sensitivity analyses."),
+         ("Against the expected direction, it was lower with more internal-medicine specialists per population", "It was lower with more internal-medicine specialists per population, opposite to the expected direction")]
+def _sub(L):
+    out = []
+    for h, t in L:
+        for a, b in _SUBS: t = t.replace(a, b)
+        if h == "Association against the expected direction": h = "Post hoc analyses of specialist density"
+        out.append((h, t))
+    return out
+METHODS = _sub(METHODS); RESULTS = _sub(RESULTS)
+_all = " ".join(t for _, t in METHODS + RESULTS)
+assert "Lifestyle-related risk factors" in _all and "by chance" not in _all and "were not possible" not in _all and "Against the expected" not in _all

@@ -1,5 +1,5 @@
 # shared_lipt.py — 31호 LIPT 원고 공용 상수: 참고문헌 문장형 표제(서지 대조 완료본), 표 1 공변량, 표 2 묶음·라벨, 그림 범례(2026-11-16).
-TFIX = {"kang2015korea": "Korea Community Health Survey data profiles",
+TFIX = {"rhee2019guidelines": "2018 guidelines for the management of dyslipidemia in Korea","kang2015korea": "Korea Community Health Survey data profiles",
         "heidari2016sex": "Sex and gender equity in research: rationale for the SAGER guidelines and recommended use",
         "kwon2025dyslipidemia": "Dyslipidemia fact sheet in South Korea, 2024",
         "kwon2026cardiovascular": "Cardiovascular disease incidence and lipid-lowering medication use in Korean adults with dyslipidemia: a nationwide population-based retrospective cohort study from 2010 to 2019",

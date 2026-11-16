@@ -45,7 +45,7 @@ KEYS = all_keys()
 ABL = ("Objective", "Methods", "Results", "Conclusion")
 
 # ── NLM(Vancouver) 참고문헌: "Surname AB, ... (6명 초과 시 6명+et al.). Title. J Abbr Year;Vol(Issue):pages."
-AUTH = {"mach2019esc": ["Mach F", "Baigent C", "Catapano AL", "Koskinas KC", "Casula M", "Badimon L", "Chapman MJ"],
+AUTH = {"rhee2019guidelines": ["Rhee EJ", "Kim HC", "Kim JH", "Lee EY", "Kim BJ", "Kim EM", "Song Y", "Lim JH"], "mach2019esc": ["Mach F", "Baigent C", "Catapano AL", "Koskinas KC", "Casula M", "Badimon L", "Chapman MJ"],
         "ctt2010efficacy": ["Cholesterol Treatment Trialists' (CTT) Collaboration"], "hartz2006why": ["Hartz I", "Njølstad I", "Furu K", "Skurtveit S", "Eggen AE"]}
 from shared_lipt import TFIX   # 문장형 표제(서지 대조 완료본)
 NLMJ = {"J R Stat Soc Series B Stat Methodol": "J R Stat Soc Series B Stat Methodol", "J Public Health (Oxf)": "J Public Health (Oxf)"}
@@ -89,7 +89,8 @@ def foot_row(J, text, sz=8, ls=12):
 def put_table(J, t, fs=9):
     c = J.counting; J.counting = False; J.table_fit(amer(t[0]), [amer(x) for x in t[1]], [[amer(x) for x in r] for r in t[2]], "", fs_max=fs, title_bold=True); foot_row(J, t[3], 8); J.counting = c
 
-from shared_lipt import TAB1_COV, GROUPS, LABEL
+from shared_lipt import TAB1_COV, GROUPS as _G, LABEL
+GROUPS = [("Lifestyle-related risk factors" if g == "Lipid risk factors" else g, v) for g, v in _G]
 def table1():
     T = N["T1"]; cols = ["W1_2011-17", "W2_2018-24", "2011-2024"]
     rows = [["__H__", "Health screening"],
@@ -137,7 +138,7 @@ def build():
     J.head("DISCUSSION", 1)
     for p in D["Discussion"]: J.para(pandoc_cites(p), indent=True)
     J.counting = False
-    J.para("<b>Supplementary Material:</b> Supplementary Sections S1–S8, Supplementary Tables S1–S5 and Supplementary Fig. S1 are provided in a separate file.", before=12)
+    J.para("<b>Supplementary Material:</b> Supplementary Sections S1–S8, Supplementary Tables S1–S7 and Supplementary Fig. S1 are provided in a separate file.", before=12)
     assert sorted(J.cites) == KEYS, (set(J.cites) ^ set(KEYS))
     J.page_break(); J.head("REFERENCES", 1); J.raw = True; rl = []
     for i, k_ in enumerate(J.cites, 1): s_ = f"{i}. " + ref(k_); rl.append(s_); J.para(s_)

@@ -1,10 +1,10 @@
-# Treated dyslipidemia, lipid risk and access to care across Korean districts, 2011-2024
+# Treated dyslipidemia, district education and lifestyle risk factors across Korean districts, 2011-2024
 
 Analysis code for the manuscript
 
-> *Does lipid-lowering treatment in Korea follow lipid risk or access to care? A nationwide district-level analysis of health screening, 2011–2024*
+> *Is self-reported treated dyslipidemia among Korean health-screening attendees associated with district education rather than lifestyle risk factors? A nationwide district-level analysis, 2011–2024*
 
-Archived version: Zenodo, https://doi.org/10.5281/zenodo.24281480 (v1.0.0). Released under the MIT license.
+Archived version: Zenodo, https://doi.org/10.5281/zenodo.24281656 (v1.0.1). Released under the MIT license.
 
 ## Contents
 

@@ -688,5 +688,27 @@
   "url": "https://www.R-project.org/",
   "year": 2026,
   "accessed": "20 October 2026"
+ },
+ "rhee2019guidelines": {
+  "type": "journal",
+  "authors": [
+   "Rhee EJ",
+   "Kim HC",
+   "Kim JH",
+   "Lee EY",
+   "Kim BJ",
+   "Kim EM",
+   "Song Y",
+   "Lim JH"
+  ],
+  "title": "2018 Guidelines for the Management of Dyslipidemia in Korea",
+  "journal": "J Lipid Atheroscler",
+  "year": 2019,
+  "vol": "8",
+  "issue": "2",
+  "pages": "78-131",
+  "doi": "10.12997/jla.2019.8.2.78",
+  "pmid": "32821702",
+  "verified": "PubMed esummary 2026-11-16 (21 authors)"
  }
 }
