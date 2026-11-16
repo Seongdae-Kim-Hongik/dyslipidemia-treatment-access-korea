@@ -2,7 +2,7 @@
 
 Analysis code for the manuscript
 
-> *Is self-reported treated dyslipidemia among Korean health-screening attendees associated with district education rather than lifestyle risk factors? A nationwide district-level analysis, 2011–2024*
+> *Is self-reported treated dyslipidemia among Korean screening attendees linked to district education rather than lifestyle risk factors?*
 
 Archived version: Zenodo, https://doi.org/10.5281/zenodo.24281656 (v1.0.1). Released under the MIT license.
 

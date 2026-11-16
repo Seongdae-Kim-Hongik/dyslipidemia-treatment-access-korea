@@ -3,7 +3,7 @@
 from content_lipt import *          # noqa: F401,F403  (N, ci, METHODS, RESULTS, sup, fh, dW ...)
 import content_lipt as _B
 _LK = _B._LK
-TITLE = "Is self-reported treated dyslipidemia among Korean health-screening attendees associated with district education rather than lifestyle risk factors? A nationwide district-level analysis, 2011–2024"
+TITLE = "Is self-reported treated dyslipidemia among Korean screening attendees linked to district education rather than lifestyle risk factors?"
 RUNNING = "Education, lifestyle and treated dyslipidemia"
 assert ":" not in TITLE and "229" not in TITLE and "standardi" not in TITLE.lower() and len(RUNNING) <= 50
 KEYWORDS = "Dyslipidemias; Health services accessibility; Educational status; Spatial analysis; Republic of Korea"
