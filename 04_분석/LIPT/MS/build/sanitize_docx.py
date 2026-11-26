@@ -1,8 +1,8 @@
-# sanitize_docx.py — python-docx 지문 제거(메모리 docx-ai-trace-audit ⑥⑧⑨⑩, docx-word-black-squares): 생성일 2013-12-23·revision 1, app.xml(AppVersion 14·TotalTime 0·Words 0·Pages 1),
-#  customXml/item1.xml·itemProps, docProps/thumbnail.jpeg, 모든 word/*.xml의 keepNext·keepLines·pageBreakBefore. creator·lastModifiedBy = Seongdae Kim(익명 심사 파일 Manuscript·Supporting_Information은 빈 값). 파일마다 수정 시각을 몇 분씩 다르게.
+# sanitize_docx.py - docx metadata and layout clean-up.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, re, sys, zipfile, shutil, subprocess, datetime, random
 def sanitize(path, minutes_ago=0, anon=None):
-    if anon is None: anon = bool(re.search(r"(Manuscript|Supporting_Information|Supplementary_Material|Supplementary_Data|STROBE|Highlights)", os.path.basename(path)))   # 익명 심사 파일은 저자 메타 비움(06 §5-G ⑥)
+    if anon is None: anon = bool(re.search(r"(Manuscript|Supporting_Information|Supplementary_Material|Supplementary_Data|STROBE|Highlights)", os.path.basename(path)))
     who = "" if anon else "Seongdae Kim"
     pdf = path[:-5] + ".pdf"
     pages = int(re.search(r"Pages:\s+(\d+)", subprocess.run(["pdfinfo", pdf], capture_output=True, text=True).stdout).group(1)) if os.path.exists(pdf) else 1
@@ -14,9 +14,9 @@ def sanitize(path, minutes_ago=0, anon=None):
                 if c._tc in _seen: continue
                 _seen.add(c._tc); _cells.append(c.text); _cp.extend(p for p in c.paragraphs if p.text.strip())
     text = "\n".join(p.text for p in d.paragraphs) + "\n" + "\n".join(_cells)
-    words = len(text.split()); chars = len(text.replace("\n", "")); paras = sum(1 for p in d.paragraphs if p.text.strip()) + len(_cp)   # 표 셀 문단 포함(병합 셀 1회)
+    words = len(text.split()); chars = len(text.replace("\n", "")); paras = sum(1 for p in d.paragraphs if p.text.strip()) + len(_cp)
     now = datetime.datetime.utcnow() - datetime.timedelta(minutes=minutes_ago)
-    created = modified = now.strftime("%Y-%m-%dT%H:%M:%SZ")   # 9호 포바포(11/6): 실제와 다른 작성 이력(난수 시각·편집 시간·수정 횟수) 금지 → 실제 생성 시각, 해당 항목 삭제
+    created = modified = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     tmp = path + ".tmp"; zin = zipfile.ZipFile(path); zout = zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED)
     drop = {n for n in zin.namelist() if n.startswith("customXml/") or n == "docProps/thumbnail.jpeg"}
     for it in zin.infolist():
@@ -28,6 +28,11 @@ def sanitize(path, minutes_ago=0, anon=None):
             if n.startswith("word/") and n.endswith(".xml"):
                 s = re.sub(r"<w:keepNext(?:\s+w:val=\"[^\"]*\")?\s*/>|<w:keepLines(?:\s+w:val=\"[^\"]*\")?\s*/>", "", s)
                 s = re.sub(r"<w:pageBreakBefore(?:\s+w:val=\"[^\"]*\")?\s*/>", "", s)
+            if n.startswith("word/") and n.endswith(".xml"):
+                s = re.sub(r'(<w:(?:top|left|bottom|right|insideH|insideV|start|end) w:val="nil")(?: w:sz="[^"]*"| w:space="[^"]*"| w:color="[^"]*")+', r"\1", s)
+            if n == "word/styles.xml":
+                s = re.sub(r'="(?:1F4D78|4F81BD|365F91|2E74B5|1F3763|243F60)"', '="000000"', s)
+                s = re.sub(r'\s?w:themeColor="accent1"(?:\s?w:themeShade="[0-9A-Fa-f]+")?', "", s)
             if n == "[Content_Types].xml":
                 s = re.sub(r'<Override PartName="/customXml/[^"]*"[^>]*/>', "", s); s = re.sub(r'<Override PartName="/docProps/thumbnail.jpeg"[^>]*/>', "", s)
             if n.endswith(".rels"):
@@ -47,6 +52,6 @@ def sanitize(path, minutes_ago=0, anon=None):
         zout.writestr(it, b)
     zout.close(); zin.close(); shutil.move(tmp, path)
     return words, pages
-if __name__ == "__main__":   # --no-anon: single-blind 저널(EJCP 8호 등)은 Manuscript 파일도 저자 메타 유지
+if __name__ == "__main__":
     NOANON = "--no-anon" in sys.argv; fs = [a for a in sys.argv[1:] if not a.startswith("--")]
-    for i, f in enumerate(fs): print(f, sanitize(f, minutes_ago=0, anon=False if NOANON else None))   # 10호 포바포 2차: 난수 시각 금지, 실제 생성 시각
+    for i, f in enumerate(fs): print(f, sanitize(f, minutes_ago=0, anon=False if NOANON else None))

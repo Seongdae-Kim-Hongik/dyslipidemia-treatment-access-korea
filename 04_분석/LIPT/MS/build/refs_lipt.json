@@ -16,7 +16,62 @@
   "pages": "40-47",
   "doi": "10.1093/pubmed/fdl068",
   "pmid": "17071815",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "bhaskara2015validity": {
+  "type": "journal",
+  "authors": [
+   "Bhaskara S",
+   "Whitsel EA",
+   "Ballantyne CM",
+   "Folsom AR"
+  ],
+  "title": "Validity of self-report of lipid medication use: the Atherosclerosis Risk in Communities (ARIC) Study",
+  "journal": "Atherosclerosis",
+  "year": 2015,
+  "vol": "242",
+  "issue": "2",
+  "pages": "625-629",
+  "doi": "10.1016/j.atherosclerosis.2015.08.026",
+  "pmid": "26342332",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "boo2018evaluating": {
+  "type": "journal",
+  "authors": [
+   "Boo S",
+   "Yoon YJ",
+   "Oh H"
+  ],
+  "title": "Evaluating the prevalence, awareness, and control of hypertension, diabetes, and dyslipidemia in Korea using the NHIS-NSC database: a cross-sectional analysis",
+  "journal": "Medicine (Baltimore)",
+  "year": 2018,
+  "vol": "97",
+  "issue": "51",
+  "pages": "e13713",
+  "doi": "10.1097/MD.0000000000013713",
+  "pmid": "30572503",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "carter2022cross": {
+  "type": "journal",
+  "authors": [
+   "Carter AR",
+   "Gill D",
+   "Davey Smith G",
+   "Taylor AE",
+   "Davies NM",
+   "Howe LD"
+  ],
+  "title": "Cross-sectional analysis of educational inequalities in primary prevention statin use in UK Biobank",
+  "journal": "Heart",
+  "year": 2022,
+  "vol": "108",
+  "issue": "7",
+  "pages": "536-542",
+  "doi": "10.1136/heartjnl-2021-319238",
+  "pmid": "34315717",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "cheolseong2017data": {
   "type": "journal",
@@ -42,11 +97,12 @@
   "pages": "799-800",
   "doi": "10.1093/ije/dyw253",
   "pmid": "27794523",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "ctt2010efficacy": {
   "type": "journal",
   "authors": [
+   "Cholesterol Treatment Trialists’ (CTT) Collaboration",
    "Baigent C",
    "Blackwell L",
    "Emberson J",
@@ -67,7 +123,7 @@
   "pages": "1670-1681",
   "doi": "10.1016/S0140-6736(10)61350-5",
   "pmid": "21067804",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "dupont2022spatial": {
   "type": "journal",
@@ -84,7 +140,7 @@
   "pages": "1279-1290",
   "doi": "10.1111/biom.13656",
   "pmid": "35258102",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "erickson2014geospatial": {
   "type": "journal",
@@ -100,7 +156,39 @@
   "pages": "1208-1215",
   "doi": "10.18553/jmcp.2014.20.12.1208",
   "pmid": "25443514",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "fleetcroft2014variations": {
+  "type": "journal",
+  "authors": [
+   "Fleetcroft R",
+   "Schofield P",
+   "Ashworth M"
+  ],
+  "title": "Variations in statin prescribing for primary cardiovascular disease prevention: cross-sectional analysis",
+  "journal": "BMC Health Serv Res",
+  "year": 2014,
+  "vol": "14",
+  "issue": "",
+  "pages": "414",
+  "doi": "10.1186/1472-6963-14-414",
+  "pmid": "25240604",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "guagliardo2004spatial": {
+  "type": "journal",
+  "authors": [
+   "Guagliardo MF"
+  ],
+  "title": "Spatial accessibility of primary care: concepts, methods and challenges",
+  "journal": "Int J Health Geogr",
+  "year": 2004,
+  "vol": "3",
+  "issue": "1",
+  "pages": "3",
+  "doi": "10.1186/1476-072X-3-3",
+  "pmid": "14987337",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "han2021regional": {
   "type": "journal",
@@ -117,7 +205,7 @@
   "pages": "585",
   "doi": "10.1186/s12877-021-02510-5",
   "pmid": "34674649",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "hartz2006why": {
   "type": "journal",
@@ -126,7 +214,7 @@
    "Njølstad I",
    "Furu K",
    "Skurtveit S",
-   "Elise Eggen A"
+   "Eggen AE"
   ],
   "title": "Why do sales of lipid-lowering drugs vary between counties in Norway? Evidence from the OPPHED Health Study 2000-2001",
   "journal": "Scand J Prim Health Care",
@@ -136,7 +224,7 @@
   "pages": "115-121",
   "doi": "10.1080/02813430500475365",
   "pmid": "16690561",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "heidari2016sex": {
   "type": "journal",
@@ -155,7 +243,7 @@
   "pages": "2",
   "doi": "10.1186/s41073-016-0007-6",
   "pmid": "29451543",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "inskip1983methods": {
   "type": "journal",
@@ -173,7 +261,34 @@
   "pages": "455-466",
   "doi": "10.1002/sim.4780020404",
   "pmid": "6672943",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "jin2023dyslipidemia": {
+  "type": "journal",
+  "authors": [
+   "Jin ES",
+   "Shim JS",
+   "Kim SE",
+   "Bae JH",
+   "Kang S",
+   "Won JC",
+   "Shin MJ",
+   "Jin HY",
+   "Moon J",
+   "Lee H",
+   "Kim HC",
+   "Jeong IK",
+   "Committee of Public Relation of the Korean Society of Lipid and Atherosclerosis"
+  ],
+  "title": "Dyslipidemia Fact Sheet in South Korea, 2022",
+  "journal": "J Lipid Atheroscler",
+  "year": 2023,
+  "vol": "12",
+  "issue": "3",
+  "pages": "237-251",
+  "doi": "10.12997/jla.2023.12.3.237",
+  "pmid": "37800108",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "kang2015korea": {
   "type": "journal",
@@ -195,7 +310,64 @@
   "pages": "211-217",
   "doi": "10.1016/j.phrp.2015.05.003",
   "pmid": "26430619",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "kang2022current": {
+  "type": "journal",
+  "authors": [
+   "Kang HT"
+  ],
+  "title": "Current Status of the National Health Screening Programs in South Korea",
+  "journal": "Korean J Fam Med",
+  "year": 2022,
+  "vol": "43",
+  "issue": "3",
+  "pages": "168-173",
+  "doi": "10.4082/kjfm.22.0052",
+  "pmid": "35610963",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "kim2017evaluation": {
+  "type": "journal",
+  "authors": [
+   "Kim AM",
+   "Park JH",
+   "Kang S",
+   "Kim Y"
+  ],
+  "title": "Evaluation of Geographic Indices Describing Health Care Utilization",
+  "journal": "J Prev Med Public Health",
+  "year": 2017,
+  "vol": "50",
+  "issue": "1",
+  "pages": "29-37",
+  "doi": "10.3961/jpmph.16.099",
+  "pmid": "28173689",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "kim2018prevalence": {
+  "type": "journal",
+  "authors": [
+   "Kim I",
+   "Bahk J",
+   "Kim YY",
+   "Lee J",
+   "Kang HY",
+   "Lee J",
+   "Yun SC",
+   "Park JH",
+   "Shin SA",
+   "Khang YH"
+  ],
+  "title": "Prevalence of Overweight and Income Gaps in 245 Districts of Korea: comparison Using the National Health Screening Database and the Community Health Survey, 2009-2014",
+  "journal": "J Korean Med Sci",
+  "year": 2018,
+  "vol": "33",
+  "issue": "1",
+  "pages": "e3",
+  "doi": "10.3346/jkms.2018.33.e3",
+  "pmid": "29215812",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "knorrheld2000bayesian": {
   "type": "journal",
@@ -210,7 +382,7 @@
   "pages": "2555-2567",
   "doi": "10.1002/1097-0258(20000915/30)19:17/18<2555::aid-sim587>3.0.co;2-#",
   "pmid": "10960871",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "kodama2007effect": {
   "type": "journal",
@@ -237,7 +409,29 @@
   "pages": "999-1008",
   "doi": "10.1001/archinte.167.10.999",
   "pmid": "17533202",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "korhonen2020lifestyle": {
+  "type": "journal",
+  "authors": [
+   "Korhonen MJ",
+   "Pentti J",
+   "Hartikainen J",
+   "Ilomäki J",
+   "Setoguchi S",
+   "Liew D",
+   "Kivimäki M",
+   "Vahtera J"
+  ],
+  "title": "Lifestyle Changes in Relation to Initiation of Antihypertensive and Lipid-Lowering Medication: a Cohort Study",
+  "journal": "J Am Heart Assoc",
+  "year": 2020,
+  "vol": "9",
+  "issue": "4",
+  "pages": "e014168",
+  "doi": "10.1161/JAHA.119.014168",
+  "pmid": "32019405",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "kwon2025dyslipidemia": {
   "type": "journal",
@@ -246,7 +440,8 @@
    "Lee SY",
    "Kim B",
    "Han K",
-   "Ahn J"
+   "Ahn J",
+   "Committee of Public Relations of the Korean Society of Lipid and Atherosclerosis"
   ],
   "title": "Dyslipidemia Fact Sheet in South Korea, 2024",
   "journal": "J Lipid Atheroscler",
@@ -256,7 +451,7 @@
   "pages": "298-311",
   "doi": "10.12997/jla.2025.14.3.298",
   "pmid": "41048599",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "kwon2026cardiovascular": {
   "type": "journal",
@@ -266,7 +461,8 @@
    "Lee SY",
    "Kim B",
    "Han K",
-   "Ahn J"
+   "Ahn J",
+   "Committee of Public Relations of the Korean Society of Lipid and Atherosclerosis"
   ],
   "title": "Cardiovascular Disease Incidence and Lipid-Lowering Medication Use in Korean Adults With Dyslipidemia: a Nationwide Population-Based Retrospective Cohort Study From 2010 to 2019",
   "journal": "J Lipid Atheroscler",
@@ -276,7 +472,7 @@
   "pages": "471-483",
   "doi": "10.12997/jla.2026.15.3.471",
   "pmid": "42812719",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "lee2025inter": {
   "type": "journal",
@@ -293,7 +489,7 @@
   "pages": "407",
   "doi": "10.1186/s12913-025-12464-8",
   "pmid": "40108702",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "lee2025national": {
   "type": "journal",
@@ -323,7 +519,7 @@
   "pages": "16148",
   "doi": "10.1038/s41598-025-00354-2",
   "pmid": "40341225",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "lipsitch2010negative": {
   "type": "journal",
@@ -340,7 +536,7 @@
   "pages": "383-388",
   "doi": "10.1097/EDE.0b013e3181d61eeb",
   "pmid": "20335814",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "mach2019esc": {
   "type": "journal",
@@ -357,7 +553,7 @@
   "pages": "140-205",
   "doi": "10.1016/j.atherosclerosis.2019.08.014",
   "pmid": "31591002",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "marcus2021unmet": {
   "type": "journal",
@@ -395,7 +591,45 @@
   "pages": "e1003841",
   "doi": "10.1371/journal.pmed.1003841",
   "pmid": "34695124",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "marcus2022use": {
+  "type": "journal",
+  "authors": [
+   "Marcus ME",
+   "Manne-Goehler J",
+   "Theilmann M",
+   "Farzadfar F",
+   "Moghaddam SS",
+   "Keykhaei M",
+   "Hajebi A",
+   "Tschida S",
+   "Lemp JM",
+   "Aryal KK",
+   "Dunn M",
+   "Houehanou C",
+   "Bahendeka S",
+   "Rohloff P",
+   "Atun R",
+   "Bärnighausen TW",
+   "Geldsetzer P",
+   "Ramirez-Zea M",
+   "Chopra V",
+   "Heisler M",
+   "Davies JI",
+   "Huffman MD",
+   "Vollmer S",
+   "Flood D"
+  ],
+  "title": "Use of statins for the prevention of cardiovascular disease in 41 low-income and middle-income countries: a cross-sectional study of nationally representative, individual-level data",
+  "journal": "Lancet Glob Health",
+  "year": 2022,
+  "vol": "10",
+  "issue": "3",
+  "pages": "e369-e379",
+  "doi": "10.1016/S2214-109X(21)00551-9",
+  "pmid": "35180420",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "morgenstern1995ecologic": {
   "type": "journal",
@@ -410,7 +644,7 @@
   "pages": "61-81",
   "doi": "10.1146/annurev.pu.16.050195.000425",
   "pmid": "7639884",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "ncdrisc2020repositioning": {
   "type": "journal",
@@ -425,7 +659,81 @@
   "pages": "73-77",
   "doi": "10.1038/s41586-020-2338-1",
   "pmid": "32494083",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "oh2026validation": {
+  "type": "journal",
+  "authors": [
+   "Oh YW",
+   "Park EC"
+  ],
+  "title": "Validation of Self-Reported Disease History in Korea: a National Health Insurance Cohort Study",
+  "journal": "J Korean Med Sci",
+  "year": 2026,
+  "vol": "41",
+  "issue": "31",
+  "pages": "e201",
+  "doi": "10.3346/jkms.2026.41.e201",
+  "pmid": "42576717",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "okuyama2019effect": {
+  "type": "journal",
+  "authors": [
+   "Okuyama K",
+   "Akai K",
+   "Kijima T",
+   "Abe T",
+   "Isomura M",
+   "Nabika T"
+  ],
+  "title": "Effect of geographic accessibility to primary care on treatment status of hypertension",
+  "journal": "PLoS One",
+  "year": 2019,
+  "vol": "14",
+  "issue": "3",
+  "pages": "e0213098",
+  "doi": "10.1371/journal.pone.0213098",
+  "pmid": "30830932",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "park2016spatial": {
+  "type": "journal",
+  "authors": [
+   "Park SY",
+   "Kwak JM",
+   "Seo EW",
+   "Lee KS"
+  ],
+  "title": "Spatial analysis of the regional variation of hypertensive disease mortality and its socio-economic correlates in South Korea",
+  "journal": "Geospat Health",
+  "year": 2016,
+  "vol": "11",
+  "issue": "2",
+  "pages": "420",
+  "doi": "10.4081/gh.2016.420",
+  "pmid": "27245801",
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "park2021association": {
+  "type": "journal",
+  "authors": [
+   "Park BH",
+   "Lee BK",
+   "Ahn J",
+   "Kim NS",
+   "Park J",
+   "Kim Y"
+  ],
+  "title": "Association of Participation in Health Check-ups with Risk Factors for Cardiovascular Diseases",
+  "journal": "J Korean Med Sci",
+  "year": 2021,
+  "vol": "36",
+  "issue": "3",
+  "pages": "e19",
+  "doi": "10.3346/jkms.2021.36.e19",
+  "pmid": "33463093",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "ray2022world": {
   "type": "journal",
@@ -463,7 +771,42 @@
   "pages": "75",
   "doi": "10.5334/gh.1154",
   "pmid": "36382159",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "rhee2019guidelines": {
+  "type": "journal",
+  "authors": [
+   "Rhee EJ",
+   "Kim HC",
+   "Kim JH",
+   "Lee EY",
+   "Kim BJ",
+   "Kim EM",
+   "Song Y",
+   "Lim JH",
+   "Kim HJ",
+   "Choi S",
+   "Moon MK",
+   "Na JO",
+   "Park KY",
+   "Oh MS",
+   "Han SY",
+   "Noh J",
+   "Yi KH",
+   "Lee SH",
+   "Hong SC",
+   "Jeong IK",
+   "Committee of Clinical Practice Guideline of Korean Society of Lipid and Atherosclerosis"
+  ],
+  "title": "2018 Guidelines for the Management of Dyslipidemia in Korea",
+  "journal": "J Lipid Atheroscler",
+  "year": 2019,
+  "vol": "8",
+  "issue": "2",
+  "pages": "78-131",
+  "doi": "10.12997/jla.2019.8.2.78",
+  "pmid": "32821702",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "riebler2016intuitive": {
   "type": "journal",
@@ -481,7 +824,34 @@
   "pages": "1145-1165",
   "doi": "10.1177/0962280216660421",
   "pmid": "27566770",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "seong2017cohort": {
+  "type": "journal",
+  "authors": [
+   "Seong SC",
+   "Kim YY",
+   "Park SK",
+   "Khang YH",
+   "Kim HC",
+   "Park JH",
+   "Kang HJ",
+   "Do CH",
+   "Song JS",
+   "Lee EJ",
+   "Ha S",
+   "Shin SA",
+   "Jeong SL"
+  ],
+  "title": "Cohort profile: the National Health Insurance Service-National Health Screening Cohort (NHIS-HEALS) in Korea",
+  "journal": "BMJ Open",
+  "year": 2017,
+  "vol": "7",
+  "issue": "9",
+  "pages": "e016640",
+  "doi": "10.1136/bmjopen-2017-016640",
+  "pmid": "28947447",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "smart2025effect": {
   "type": "journal",
@@ -504,7 +874,7 @@
   "pages": "67-78",
   "doi": "10.1007/s40279-024-02115-z",
   "pmid": "39331324",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "steegen2016increasing": {
   "type": "journal",
@@ -522,7 +892,7 @@
   "pages": "702-712",
   "doi": "10.1177/1745691616658637",
   "pmid": "27694465",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "stocks2009gender": {
   "type": "journal",
@@ -541,7 +911,7 @@
   "pages": "92-96",
   "doi": "10.1111/j.1440-1584.2009.01043.x",
   "pmid": "19335599",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "vanderweele2017sensitivity": {
   "type": "journal",
@@ -557,7 +927,7 @@
   "pages": "268-274",
   "doi": "10.7326/M16-2607",
   "pmid": "28693043",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "vonelm2007strengthening": {
   "type": "journal",
@@ -567,7 +937,8 @@
    "Egger M",
    "Pocock SJ",
    "Gøtzsche PC",
-   "Vandenbroucke JP"
+   "Vandenbroucke JP",
+   "STROBE Initiative"
   ],
   "title": "The Strengthening the Reporting of Observational Studies in Epidemiology (STROBE) statement: guidelines for reporting observational studies",
   "journal": "Lancet",
@@ -577,7 +948,7 @@
   "pages": "1453-1457",
   "doi": "10.1016/S0140-6736(07)61602-X",
   "pmid": "18064739",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "wallachkildemoes2013adherence": {
   "type": "journal",
@@ -595,7 +966,30 @@
   "pages": "1553-1563",
   "doi": "10.1007/s00228-013-1488-6",
   "pmid": "23588558",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
+ },
+ "yun2023socioeconomic": {
+  "type": "journal",
+  "authors": [
+   "Yun B",
+   "Oh J",
+   "Choi J",
+   "Rozek LS",
+   "Park H",
+   "Sim J",
+   "Kim Y",
+   "Lee J",
+   "Yoon JH"
+  ],
+  "title": "Socioeconomic Disparities in the Association Between All-Cause Mortality and Health Check-Up Participation Among Healthy Middle-Aged Workers: a Nationwide Study",
+  "journal": "J Korean Med Sci",
+  "year": 2023,
+  "vol": "38",
+  "issue": "50",
+  "pages": "e384",
+  "doi": "10.3346/jkms.2023.38.e384",
+  "pmid": "38147834",
+  "verified": "PubMed esummary 2026-11-26"
  },
  "zheutlin2024association": {
   "type": "journal",
@@ -622,7 +1016,7 @@
   "pages": "e031717",
   "doi": "10.1161/JAHA.123.031717",
   "pmid": "38390820",
-  "verified": "PubMed esummary 2026-11-12"
+  "verified": "PubMed esummary 2026-11-26"
  },
  "bell2015explaining": {
   "type": "journal",
@@ -637,7 +1031,7 @@
   "issue": "1",
   "pages": "133-153",
   "doi": "10.1017/psrm.2014.7",
-  "verified": "Crossref 2026-11-12"
+  "verified": "Crossref 2026-11-26"
  },
  "rue2009approximate": {
   "type": "journal",
@@ -653,7 +1047,7 @@
   "issue": "2",
   "pages": "319-392",
   "doi": "10.1111/j.1467-9868.2008.00700.x",
-  "verified": "Crossref 2026-11-12"
+  "verified": "Crossref 2026-11-26"
  },
  "simpson2017penalising": {
   "type": "journal",
@@ -671,7 +1065,7 @@
   "issue": "1",
   "pages": "1-28",
   "doi": "10.1214/16-sts576",
-  "verified": "Crossref 2026-11-12"
+  "verified": "Crossref 2026-11-26"
  },
  "web:kosis2026screening": {
   "type": "web",
@@ -688,27 +1082,5 @@
   "url": "https://www.R-project.org/",
   "year": 2026,
   "accessed": "20 October 2026"
- },
- "rhee2019guidelines": {
-  "type": "journal",
-  "authors": [
-   "Rhee EJ",
-   "Kim HC",
-   "Kim JH",
-   "Lee EY",
-   "Kim BJ",
-   "Kim EM",
-   "Song Y",
-   "Lim JH"
-  ],
-  "title": "2018 Guidelines for the Management of Dyslipidemia in Korea",
-  "journal": "J Lipid Atheroscler",
-  "year": 2019,
-  "vol": "8",
-  "issue": "2",
-  "pages": "78-131",
-  "doi": "10.12997/jla.2019.8.2.78",
-  "pmid": "32821702",
-  "verified": "PubMed esummary 2026-11-16 (21 authors)"
  }
 }

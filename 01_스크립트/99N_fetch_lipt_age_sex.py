@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# 99N — 다음 후보 10종 선별(2026-11-11): 유질환자 세부현황 전국 성×연령 표(KOSIS DT_35007_N106 후보)를 받는다. 99U_fetch 복제, 원본 수정 없음.
-#  키: ~/.kosis_key(내용 출력 금지). 산출: 00_원천/C_NHIS_검진보험/<TBL>_national/<연도>.json, <TBL>_national_long.csv
+# 99N_fetch_lipt_age_sex.py - national attendees and treated dyslipidemia by sex and age (KOSIS Open API).
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, sys, json, time, urllib.request, urllib.parse
 import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 SRC = os.path.join(ROOT, "00_원천", "C_NHIS_검진보험")
 TBL = sys.argv[1]; Y0, Y1 = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) > 3 else (2011, 2024)
-KEY = os.environ["KOSIS_KEY"]   # KOSIS Open API key (not included)
+KEY = os.environ["KOSIS_KEY"]
 URL = "https://kosis.kr/openapi/Param/statisticsParameterData.do?"
 OUT = os.path.join(SRC, f"{TBL}_national"); os.makedirs(OUT, exist_ok=True); rows = []
 for y in range(Y0, Y1 + 1):

@@ -1,6 +1,6 @@
 #!/bin/bash
-# LIPT(31호, 검진 이상지질혈증 유질환자) std3 전 체인 — 25호 UNDX/run_std3_chain.sh 복제(2026-11-11, 구성 결과 없음). E = 99L2(성×16연령 간접표준화, 판정 수검자 분모), 수급률 양쪽 정정 99c_lipt.
-#  2011-2024 완전 격자(세종 미관측) → 86·88k kh 원본. 비교 결과 INFECT·GCA. 민감도 s577·s2·s8, 81 S10 = E_pop(수검 선택). 모든 R은 rslot.sh 공유 슬롯.
+# run_std3_chain.sh - full model chain for the principal version (std3).
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 set -x
 S="${ST_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"; cd "$S"; RS="$S/01_스크립트/rslot.sh"; RC="${ST_FBDZIP_CORRECTED:?set ST_FBDZIP_CORRECTED}"
 T=LIPT; GR="$S/04_분석/$T/graph_593.graph"; D=261111; NW=3; NMV=200

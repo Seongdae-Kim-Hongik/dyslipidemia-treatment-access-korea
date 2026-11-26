@@ -1,34 +1,5 @@
-"""50_build_master_panel.py — 여러 원천의 시군구×연도 wide 패널을 하나의 마스터 패널로 병합하고 통합 변수사전을 만든다.
-
-기준 키: 02_패널/시군구_마스터키.csv 의 key(= "시도표준명|시군구", FBD 229 시군구, 2024년 경계).
-연도: 각 원천이 가진 범위 그대로(outer), 마스터는 year × key 완전 격자.
-
-입력(02_패널/, 있는 것만 자동 포함):
-  KCHS_시군구_연도_wide.csv                 → kchs__
-  NHIS_주요질환_시군구_연도_wide.csv         → nhis__
-  NHIS_진료현황_시군구_연도_wide.csv         → nhis__
-  NHIS검진_시군구_연도_wide.csv             → chk__
-  사망원인_시군구_연도_wide.csv             → mort__ (level=='시군구'만)
-  인구동향_시군구_연도_wide.csv             → pop__  (level=='시군구'만)
-  체육시설_시군구_연도_wide.csv             → fac__
-  마을체육시설_시군구_연도.csv              → vil__
-  F_e지방지표_시군구_연도_wide.csv          → eloc__ (있으면)
-  E_기타_시군구_연도_wide.csv               → etc__  (있으면)
-  인구 분모: FBD 식중독최종.csv (year, sido, sigungu, population) — 읽기만
-
-산출(02_패널/):
-  MASTER_시군구_연도_wide.parquet / .csv.gz
-  MASTER_변수사전.csv
-  MASTER_병합_점검.md
-  MASTER_병합_unmatched.csv
-
-경계 규칙(2024 기준): 군위군→대구시, 연기군→세종시, 인천 남구→미추홀구, 제주/서귀포→제주시/서귀포시 (40_region_crosswalk),
-  청원군(~2013)→충청북도|청주시 합산(합산 가능한 양만, 비율은 청주시 값 유지, boundary_flag='청원군합산'),
-  마산시·진해시(~2009)→창원시 합산(비율 결측, '창원통합'), 북제주군→제주시·남제주군→서귀포시(~2005, 비율은 시 값 유지),
-  여주군→여주시, 당진군→당진시, 양주군→양주시, 포천군→포천시, 광주군→광주시, 화성군→화성시(1:1 개명),
-  통합시 하위 구(고양·성남·수원·안산·안양·용인·부천·청주·천안·전주·포항·창원·화성)→시로 합산('하위구합산', 비율은 재계산 가능하면 재계산, 아니면 결측).
-재실행 가능: 입력이 늘면 같은 명령으로 다시 돌린다.
-"""
+# 50_build_master_panel.py - district-year master table from public statistics.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, re, sys, importlib.util, datetime
 import numpy as np, pandas as pd
 
@@ -40,8 +11,6 @@ _spec = importlib.util.spec_from_file_location("region_crosswalk", os.path.join(
 rc = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(rc)
 sido_std, sgg_clean, make_key = rc.sido_std, rc.sgg_clean, rc.make_key
 
-# ---------------------------------------------------------------- 지역 매핑 규칙
-# 1:1 개명·표기 정정 (시도표준명, 정리된 시군구) -> (시도표준명, 시군구, 플래그)
 RENAME = {
     ("경기도", "여주군"): ("경기도", "여주시", "개명"), ("충청남도", "당진군"): ("충청남도", "당진시", "개명"),
     ("경기도", "양주군"): ("경기도", "양주시", "개명"), ("경기도", "포천군"): ("경기도", "포천시", "개명"),
@@ -55,7 +24,6 @@ RENAME = {
     ("서울시", "인천계양구"): ("인천시", "계양구", "표기정정"), ("서울시", "고양시덕양구"): ("경기도", "고양시덕양구", "표기정정"),
     ("충청북도", "상당구"): ("충청북도", "청주시상당구", "표기정정"), ("충청북도", "흥덕구"): ("충청북도", "청주시흥덕구", "표기정정"),
 }
-# 합산 대상(폐지 지역 → 2024 경계의 시) : (시도, 시군구) -> (시도, 시군구, 플래그, 비율처리)  비율처리: 'keep'(시 값 유지) | 'nan'(결측)
 MERGE = {
     ("충청북도", "청원군"): ("충청북도", "청주시", "청원군합산", "keep"),
     ("경상남도", "마산시"): ("경상남도", "창원시", "창원통합", "nan"),
@@ -67,9 +35,7 @@ PARENT_CITIES = ["고양시", "성남시", "수원시", "안산시", "안양시"
 
 
 def map_region(sido_raw, sgg_raw, master_keys, subs_unmatched=False, merged_unmatched=False):
-    """(원천 sido, sigungu) -> dict(key, sido_std, sigungu, role, flag). 매칭 실패면 key=None.
-    subs_unmatched=True 면 통합시 하위 구 행을 합산하지 않고 미매칭으로 보낸다(e-지방지표처럼 합산 불가한 지표 원천)."""
-    sgg_raw = re.sub(r"\([^)]*~[^)]*\)|\(변동전\)", "", str(sgg_raw))   # '창원시(2014~)', '청주시 상당구(~2013)', '여주군(변동전)' 꼬리표 제거
+    sgg_raw = re.sub(r"\([^)]*~[^)]*\)|\(변동전\)", "", str(sgg_raw))
     k = make_key(sido_raw, sgg_raw)
     sd, sg = k.split("|", 1)
     role, flag = "primary", ""
@@ -77,7 +43,7 @@ def map_region(sido_raw, sgg_raw, master_keys, subs_unmatched=False, merged_unma
         sd, sg, flag = RENAME[(sd, sg)]
     ratio_mode = None
     if (sd, sg) in MERGE:
-        if merged_unmatched:   # 합산 불가 지표 원천: 폐지 지역(청원군·마산·진해·남북제주군) 값을 시 값으로 쓰지 않음
+        if merged_unmatched:
             return dict(key=None, sido_std=sd, sigungu=sg, role="merged", flag="폐지지역(미매칭)", ratio_mode=None)
         sd, sg, flag, ratio_mode = MERGE[(sd, sg)]; role = "merged"
     else:
@@ -92,7 +58,6 @@ def map_region(sido_raw, sgg_raw, master_keys, subs_unmatched=False, merged_unma
     return dict(key=key, sido_std=sd, sigungu=sg, role=role, flag=flag, ratio_mode=ratio_mode)
 
 
-# ---------------------------------------------------------------- 원천 정의
 def _exists(f): return os.path.exists(os.path.join(PAN, f))
 
 ID_DROP = ["period", "sgg_code", "sgg_code_std", "level", "parent_code", "code_note", "region_nm", "kchs_code",
@@ -123,7 +88,6 @@ SOURCES = [
 
 
 def load_chk_formulas():
-    """NHIS검진_변수사전의 파생 열 공식('A/B*100') + 대사_*_비율(=인원/대사_수검자수*100)."""
     f = os.path.join(PAN, "NHIS검진_변수사전.csv")
     out = {}
     if not os.path.exists(f): return out
@@ -138,7 +102,6 @@ def load_chk_formulas():
 
 
 def load_source(src, master_keys, log):
-    """원천 wide → (key, year) 단위 집계. 반환: df(year,key,boundary_flag, 변수...), 메타 dict."""
     frames = []
     for f in src["files"]:
         p = os.path.join(PAN, f)
@@ -162,7 +125,6 @@ def load_source(src, master_keys, log):
     var_cols = [c for c in d.columns if c not in ("year", "_sido", "_sgg")]
     for c in var_cols: d[c] = pd.to_numeric(d[c], errors="coerce")
 
-    # 지역 매핑
     pairs = d[["_sido", "_sgg"]].drop_duplicates()
     mp = {(a, b): map_region(a, b, master_keys, subs_unmatched=src.get("subs_unmatched", False), merged_unmatched=src.get("merged_unmatched", False)) for a, b in zip(pairs._sido, pairs._sgg)}
     d["key"] = [mp[(a, b)]["key"] for a, b in zip(d._sido, d._sgg)]
@@ -178,13 +140,11 @@ def load_source(src, master_keys, log):
     log["unmatched"].append(um_tbl)
     d = d[d.key.notna()].copy()
 
-    # 합산 처리 목록(하위구·폐지 지역·표기 정정)
     sp = d[d._role.ne("primary") | d._flag.ne("")].groupby(["_sido", "_sgg", "key", "_role", "_flag"]).agg(
         years=("year", lambda s: f"{s.min()}~{s.max()}"), n_rows=("year", "size")).reset_index()
     sp = sp.rename(columns={"_sido": "sido", "_sgg": "sigungu", "_role": "role", "_flag": "flag"})
     sp.insert(0, "source", src["name"]); log["special"].append(sp)
 
-    # 집계
     ratio_fn = src["ratio"]
     formulas = load_chk_formulas() if ratio_fn == "dict" else {}
     if ratio_fn == "dict":
@@ -210,28 +170,24 @@ def load_source(src, master_keys, log):
             roles = grp._role.tolist(); rmodes = set(m for m in grp._rmode if m)
             out = {}
             prim = grp[grp._role == "primary"]
-            if len(prim) and (grp._role == "sub").any():   # 시 행이 이미 있으면 하위 구 행은 버림(이중계상 방지)
+            if len(prim) and (grp._role == "sub").any():
                 grp = grp[grp._role != "sub"]; rmodes = set(m for m in grp._rmode if m)
                 flags = sorted((set(flags) - {"하위구합산"}) | {"하위구제외"})
                 if len(grp) == 1:
                     out = {c: grp[c].iloc[0] for c in var_cols}
                     out["key"] = key; out["year"] = yr; out["boundary_flag"] = ";".join(flags); rows.append(out); continue
-            # 양(합산)
             for c in count_cols:
                 out[c] = grp[c].sum(min_count=1)
-            # e-지방지표 등: 시도명 변형으로 나뉜 행을 열별 첫 비결측(정식 행 우선, 그다음 합산 대상 행)으로 합침
             if src.get("pool") == "first":
                 ordered = pd.concat([prim, grp[grp._role != "primary"]])
                 for c in var_cols:
                     v = ordered[c].dropna(); out[c] = v.iloc[0] if len(v) else np.nan
                 out["key"] = key; out["year"] = yr; out["boundary_flag"] = ";".join(flags); rows.append(out); continue
-            # KCHS: 같은 key에 보건소(코드) 행이 둘 이상이면 응답자수(N) 가중 평균으로 풀링, 시도명 변형(강원도/강원특별자치도)처럼 보완적이면 그대로 합침
             if src.get("pool") == "kchs" and len(prim) >= 2:
                 pooled, did_pool = pool_kchs(prim, var_cols)
                 out.update(pooled)
                 if did_pool: flags = sorted(set(flags) | {"보건소합산"})
                 out["key"] = key; out["year"] = yr; out["boundary_flag"] = ";".join(flags); rows.append(out); continue
-            # 비율
             for c in ratio_cols:
                 v = np.nan
                 if c in formulas and all(x in out for x in formulas[c]):
@@ -246,7 +202,6 @@ def load_source(src, master_keys, log):
                         nv = grp[c].dropna(); v = nv.iloc[0] if len(nv) == 1 else np.nan
                     else: v = np.nan
                 out[c] = v
-            # 겹침 점검: primary 행이 둘 이상이면서 같은 열에 값이 둘 이상 → 중복 위험 기록
             if (np.array(roles) == "primary").sum() >= 2:
                 ov = int((prim[var_cols].notna().sum(axis=0) >= 2).sum())
                 overlap_notes.append(dict(source=src["name"], key=key, year=int(yr), rows="+".join(f"{a}/{b}" for a, b in zip(grp._sido, grp._sgg)),
@@ -263,7 +218,6 @@ def load_source(src, master_keys, log):
 
 
 def pool_kchs(prim, var_cols):
-    """KCHS 보건소 단위 행이 둘 이상인 key×year 풀링. 열이 보완적(한 행에만 값)이면 그대로, 겹치면 N 가중 평균(CR·SR), N 합, SE는 sqrt(sum(w^2 se^2))."""
     out = {}
     overlap = (prim[var_cols].notna().sum(axis=0) >= 2)
     if not overlap.any():
@@ -290,9 +244,7 @@ def pool_kchs(prim, var_cols):
     return out, True
 
 
-# ---------------------------------------------------------------- 변수사전 보조
 def dict_lookup(src_name):
-    """원천별 변수사전 → column -> (TBL_ID, TBL_NM, 원항목, 단위)"""
     out = {}
     if src_name == "kchs" and _exists("KCHS_변수사전.csv"):
         d = pd.read_csv(os.path.join(PAN, "KCHS_변수사전.csv"), dtype=str)
@@ -333,9 +285,7 @@ def is_dependent(src_name, col, tbl_id):
     return "N"
 
 
-# ---------------------------------------------------------------- 메인
 def correct_changwon_population(master):
-    # KOSIS DT_1YL20651E, T20, 48120, 2023. The historical FBD input repeats the 2022 value.
     rows = master.index[master.key.eq("경상남도|창원시") & master.year.eq(2023)]
     if not len(rows) and not master.year.eq(2023).any():
         return
@@ -370,13 +320,11 @@ def main():
         aggs[src["name"]] = (agg, meta, src)
         print(f"[ok] {src['name']}: 입력행 {meta['n_rows_in']} → 집계행 {len(agg)}, 변수 {len(meta['var_cols'])}, 합산그룹 {meta['n_multi']}")
 
-    # 인구 분모
     pop = pd.read_csv(FBD, usecols=["year", "sido", "sigungu", "population"], dtype={"sido": str, "sigungu": str}).drop_duplicates()
     pop["key"] = [make_key(a, b) for a, b in zip(pop.sido, pop.sigungu)]
     pop = pop.groupby(["key", "year"], as_index=False).population.first()
     pop_un = sorted(set(pop.key) - master_keys)
 
-    # 격자
     years = sorted(set().union(*[set(a.year.unique()) for a, _, _ in aggs.values()]) | set(pop.year.unique()))
     grid = pd.MultiIndex.from_product([years, sorted(master_keys)], names=["year", "key"]).to_frame(index=False)
     grid["sido_std"] = grid.key.str.split("|").str[0]; grid["sigungu"] = grid.key.str.split("|").str[1]
@@ -397,7 +345,6 @@ def main():
     master.to_parquet(os.path.join(PAN, "MASTER_시군구_연도_wide.parquet"), index=False)
     master.to_csv(os.path.join(PAN, "MASTER_시군구_연도_wide.csv.gz"), index=False, encoding="utf-8-sig", compression="gzip")
 
-    # 변수사전
     rows = []
     for name, (agg, meta, src) in aggs.items():
         lk = dict_lookup(name)
@@ -415,13 +362,11 @@ def main():
     vd = pd.DataFrame(rows)
     vd.to_csv(os.path.join(PAN, "MASTER_변수사전.csv"), index=False, encoding="utf-8-sig")
 
-    # 미매칭 저장
     um = pd.concat(log["unmatched"], ignore_index=True) if log["unmatched"] else pd.DataFrame(columns=["source", "_sido", "_sgg", "years", "n_rows", "n_rows_with_values"])
     um = um.rename(columns={"_sido": "sido", "_sgg": "sigungu"})
     um.to_csv(os.path.join(PAN, "MASTER_병합_unmatched.csv"), index=False, encoding="utf-8-sig")
     sp = pd.concat(log["special"], ignore_index=True) if log["special"] else pd.DataFrame()
 
-    # 점검 md
     nY = int((vd.dependent == "Y").sum()); nN = int((vd.dependent == "N").sum())
     L = [f"# MASTER 병합 점검 ({datetime.date.today()})", "",
          f"- 마스터: {len(master):,}행 × {master.shape[1]:,}열, 시군구 {master.key.nunique()}개 × 연도 {years[0]}~{years[-1]}({len(years)}개), 완전 격자",

@@ -1,6 +1,5 @@
-# build_refs_lipt.py (31호 LIPT 복제 2026-11-12) ← build_refs_cogn.py — 참고문헌(build_refs_crc.py 복제, 2026-11-06) 메타데이터 캐시(refs_lipt.json). 네트워크는 이 스크립트에서만(2026-11-06).
-#  키 = 원고 원천(draft md + content_lipt.py)의 [@key]. manifest(ALL_refs.csv) PMID → PubMed esummary, 없으면 DOI → Crossref. 웹 문헌은 WEB 사전.
-#  EJCP 저자-연도 서식은 build_ejcp_crc.py가 이 캐시로 만든다(저자 성 = PubMed 이름에서 이니셜 제거).
+# build_refs_lipt.py - reference list from PubMed/Crossref metadata.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, re, json, time, urllib.request, urllib.parse, glob
 import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); MS = os.path.dirname(HERE)
@@ -22,7 +21,7 @@ for i in range(0, len(pm), 150):
     d = json.load(urllib.request.urlopen("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=" + ids, timeout=60))["result"]
     for k in pm[i:i + 150]:
         r = d[M.loc[k, "pmid"]]
-        au = [a["name"] for a in r["authors"] if a.get("authtype", "Author") == "Author"] or [a["name"] for a in r["authors"]]
+        au = [a["name"] for a in r["authors"] if a.get("authtype", "Author") in ("Author", "CollectiveName")] or [a["name"] for a in r["authors"]]
         doi = next((a["value"] for a in r["articleids"] if a["idtype"] == "doi"), "") or M.loc[k, "doi"]
         pages = r.get("pages", "") or (r.get("elocationid", "").replace("pii: ", "").split(" doi")[0] if r.get("elocationid", "").startswith("pii:") else "")
         out[k] = dict(type="journal", authors=au, title=r["title"].rstrip("."), journal=r["source"], year=int(r["pubdate"][:4]), vol=r.get("volume", ""), issue=r.get("issue", ""), pages=pages, doi=doi, pmid=M.loc[k, "pmid"], verified="PubMed esummary " + time.strftime("%Y-%m-%d"))
@@ -32,20 +31,19 @@ for k in keys:
     if k.startswith("web:"): out[k] = WEB[k]; continue
     if k in out: continue
     doi = M.loc[k, "doi"]; assert doi, k
-    m = json.load(urllib.request.urlopen(urllib.request.Request("https://api.crossref.org/works/" + urllib.parse.quote(doi), headers={"User-Agent": "research (kimsd@hongik.ac.kr)"}), timeout=60))["message"]
+    m = json.load(urllib.request.urlopen(urllib.request.Request("https://api.crossref.org/works/" + urllib.parse.quote(doi), headers={"User-Agent": "refs-builder/1.0"}), timeout=60))["message"]
     au = [f"{a.get('family','')} {''.join(x[0] for x in re.split(r'[ -]', a.get('given','')) if x)}".strip() for a in m.get("author", [])]
     ct = (m.get("container-title") or [""])[0]; jt = JABBR.get(ct, (m.get("short-container-title") or [ct])[0])
     yr = (m.get("published-print") or m.get("published-online") or m.get("issued"))["date-parts"][0][0]
     out[k] = dict(type="journal", authors=au, title=re.sub(r"<[^>]+>", "", (m.get("title") or [""])[0]), journal=jt, year=int(yr), vol=m.get("volume", ""), issue=m.get("issue", ""), pages=m.get("page", "") or m.get("article-number", ""), doi=doi, verified="Crossref " + time.strftime("%Y-%m-%d"))
     time.sleep(0.3)
-# 서식 통일: 학술지 MEDLINE 약어(마침표 없음), 쪽 범위 전체 표기, 대문자 제목 문장형
 JN = {"Polit. Sci. Res. Methods": "Polit Sci Res Methods", "Geogr. Anal.": "Geogr Anal", "Stat. Sci.": "Stat Sci", "J R Stat Soc Series B Stat Methodol": "J R Stat Soc Series B Stat Methodol",
       "Journal of the Royal Statistical Society Series B: Statistical Methodology": "J R Stat Soc Series B Stat Methodol"}
 def fullp(p):
     m = re.match(r"^(\d+)-(\d+)$", str(p))
     if not m: return p
     a, b = m.groups(); return p if len(b) >= len(a) else f"{a}-{a[:len(a)-len(b)]+b}"
-FIXP = {}   # 전자 논문 번호(PubMed esummary pages 없음·마침표 붙음)
+FIXP = {}
 AHEAD = set()
 for k, v in out.items():
     if v.get("type") != "journal": continue
@@ -55,7 +53,6 @@ for k, v in out.items():
     v["pages"] = fullp(v.get("pages", "")) if k not in AHEAD else ""
     if v["title"].isupper(): v["title"] = v["title"].capitalize()
     v["authors"] = [a.title() if a.isupper() else a for a in v["authors"]]
-# 문장형 제목(제목형 대소문자 문헌만 직접 지정, 고유명사 유지)
 SENT = {
  "blanc2019occupational": "The occupational burden of nonmalignant respiratory diseases. An official American Thoracic Society and European Respiratory Society statement",
  "choi2020regional": "Regional variation of suicide mortality in South Korea",
@@ -81,19 +78,17 @@ SENT = {
 }
 for k, t in SENT.items():
     if k in out: out[k]["title"] = t
-for k, v in out.items():   # 콜론 뒤 첫 글자 소문자(고유명사·약어 제외)
+for k, v in out.items():
     if v.get("type") == "journal":
         v["title"] = re.sub(r":\s+([A-Z][a-z]*)\b", lambda m: ": " + (m.group(1) if m.group(1) in ("Korea", "Korean", "South", "Bayesian", "Spatial", "E", "GLOBOCAN", "COPD") else m.group(1).lower()), v["title"])
-# PubMed 저자명 뒤집힘 교정(2026-11-06 조테로 검증에서 발견: PubMed 27794523이 "Cheol Seong S", "Heon Park J"로 색인 — 원문 Sang Cheol Seong, Jong Heon Park)
-AUTHOR_FIX = {"Cheol Seong S": "Seong SC", "Heon Park J": "Park JH", "Hyon Bang J": "Bang JH", "Ae Shin S": "Shin SA"}
+AUTHOR_FIX = {"Cheol Seong S": "Seong SC", "Heon Park J": "Park JH", "Hyon Bang J": "Bang JH", "Ae Shin S": "Shin SA", "Elise Eggen A": "Eggen AE"}
 for _k, _v in out.items():
     if isinstance(_v.get("authors"), list): _v["authors"] = [AUTHOR_FIX.get(a, a) for a in _v["authors"]]
 assert not any("Cheol Seong" in a for v in out.values() if isinstance(v.get("authors"), list) for a in v["authors"])
-# 13호 review 1회차: 출처 메타 오류 교정(PubMed 제목 역따옴표, MDPI 논문 번호 누락)
 if "salerno2023alzheimers" in out: out["salerno2023alzheimers"]["title"] = out["salerno2023alzheimers"]["title"].replace("`", "'")
 if "lim2022predictive" in out: out["lim2022predictive"].update(issue="9", pages="1388")
 json.dump(out, open(os.path.join(HERE, "refs_lipt.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 import re as _re
-for _k, _v in out.items():   # 9호부터: 한국인 이름 뒤집힘 검사(두 음절 이름 + 한 글자 이니셜)
-    if isinstance(_v.get("authors"), list): assert not [a for a in _v["authors"] if a not in ("Tchetgen Tchetgen E", "Mejia Arango S") and _re.fullmatch(r"[A-Z][a-z]+ [A-Z][a-z]+ [A-Z]", a)], (_k, _v["authors"])
+for _k, _v in out.items():
+    if isinstance(_v.get("authors"), list): assert not [a for a in _v["authors"] if a not in ("Tchetgen Tchetgen E", "Mejia Arango S", "Davey Smith G", "De Castro P", "Singh Gurung M") and _re.fullmatch(r"[A-Z][a-z]+ [A-Z][a-z]+ [A-Z]", a)], (_k, _v["authors"])
 print(len(keys), "keys;", sum(v["type"] == "journal" for v in out.values()), "journal,", sum(v["type"] == "web" for v in out.values()), "web")

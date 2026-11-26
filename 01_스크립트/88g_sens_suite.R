@@ -1,8 +1,5 @@
-# 88g — 공간 트랙 질환 공통 민감도 묶음(88c·88f 정신질환판 일반화, 2026-10-21 유방암 2호부터).
-#  사용(01_스크립트/): TAG=BRCA ST_VER=std GROUP=1..6 [NCO=GCA,INFECT] [FOCAL=walking_practice_rate] [SMOOTH=sex_ratio] [DROPS='{"name":["v1","v2"]}'] Rscript 88g_sens_suite.R
-#  입력 = 88g_sens_prep.py 산출 S41_panel_*. 산출 = results_<VER>/S41_part_<analysis>.csv(공변량별 IRR + 적합 요약), S41_hot_<analysis>.csv(핫스팟)
-#  GROUP 1 = 우도·시간·평활·Spatial+·지연·극단·이동평균·비교결과 / 2 = 시도 빼기 / 3 = 연도 빼기·짝홀·2024 조건부 검증 / 4 = 대체 잡음 20회
-#        5 = 같은 기간 비지연 비교 / 6 = 이원 분해(강건 집합)·변수 제외(DROPS)
+# 88g_sens_suite.R - sensitivity suite (GROUP=1..6).
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 suppressPackageStartupMessages({library(INLA);library(sf);library(spdep);library(jsonlite)})
 TAG<-Sys.getenv("TAG");stopifnot(nzchar(TAG));VER<-Sys.getenv("ST_VER",unset="std");SUF<-if(nzchar(VER))paste0("_",VER) else ""
 ROOT<-normalizePath(file.path(dirname(sub("--file=","",grep("--file=",commandArgs(),value=TRUE))),".."))

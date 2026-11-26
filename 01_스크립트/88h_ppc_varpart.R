@@ -1,5 +1,5 @@
-# 88h — 공통 사후예측 점검·분산 분해(88e 정신질환판 일반화, 2026-10-21 유방암부터). E 변형 민감도는 질환별 E 파일이 있을 때만 별도.
-#  사용(01_스크립트/): TAG=BRCA ST_VER=std Rscript 88h_ppc_varpart.R    산출: results_<VER>/S42_ppc.csv, S42_pit_hist.csv, S42_variance_partition.csv
+# 88h_ppc_varpart.R - posterior predictive checks and variance partition.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 suppressPackageStartupMessages({library(INLA);library(sf);library(spdep);library(jsonlite)})
 TAG<-Sys.getenv("TAG");stopifnot(nzchar(TAG));VER<-Sys.getenv("ST_VER",unset="std");SUF<-if(nzchar(VER))paste0("_",VER) else ""
 ROOT<-normalizePath(file.path(dirname(sub("--file=","",grep("--file=",commandArgs(),value=TRUE))),".."))
@@ -33,7 +33,6 @@ safe<-function(...){tryCatch(fit(...),error=function(e){message("  fit failed: "
 irr<-function(m,v){r<-m$summary.fixed[v,,drop=FALSE];pg<-1-inla.pmarginal(0,m$marginals.fixed[[v]])
   data.frame(cov=v,IRR=round(exp(r$mean),3),lo=round(exp(r$`0.025quant`),3),hi=round(exp(r$`0.975quant`),3),P_gt1=round(pg,3),cred=(r$`0.025quant`>0|r$`0.975quant`<0),stringsAsFactors=FALSE)}
 set.seed(20261020)
-## (Q3) 주모형 재적합: CPO/PIT + 사후표본
 rhs<-c("1",bt(MAINV),SPf(),TI,IT);form<-as.formula(paste("cases ~",paste(rhs,collapse="+")))
 m<-inla(form,family=MAINFAM,data=DD,E=E,control.fixed=CF,control.compute=list(cpo=TRUE,waic=TRUE,config=TRUE),
         control.inla=list(control.vb=list(emergency=50)),control.predictor=list(compute=TRUE),verbose=FALSE)
@@ -51,7 +50,6 @@ ksp<-suppressWarnings(ks.test(pit,"punif")$p.value)
 ppc<-data.frame(n_obs=n,n_samples=NS,coverage95=round(cov95,4),coverage50=round(cov50,4),ppp_variance_logSIR=round(ppp_var,3),
   pit_ks_p=signif(ksp,3),pit_mean=round(mean(pit,na.rm=TRUE),3),pit_sd=round(sd(pit,na.rm=TRUE),3),LCPO=round(-mean(log(m$cpo$cpo),na.rm=TRUE),4))
 if(NS>=200){write.csv(ppc,file.path(RES,"S42_ppc.csv"),row.names=FALSE)};print(ppc)
-## 분산 분해(선형예측자, 사후평균 기준)
 X<-model.matrix(as.formula(paste("~",paste(bt(MAINV),collapse="+"))),DD);b<-m$summary.fixed$mean;names(b)<-rownames(m$summary.fixed)
 colnames(X)<-gsub("`","",colnames(X));fx<-as.vector(X[,-1,drop=FALSE]%*%b[colnames(X)[-1]])
 ra<-m$summary.random$area$mean;comb<-ra[1:g$n][DD$area];ustar<-ra[(g$n+1):(2*g$n)][DD$area]

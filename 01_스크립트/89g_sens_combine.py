@@ -1,5 +1,5 @@
-"""89g — 88g 민감도 결과 종합(89c 정신질환판 일반화, 2026-10-21). 사용: python3 01_스크립트/89g_sens_combine.py <TAG> <VER>
-산출 results_<VER>/S41_retention_by_cov.csv, S41_noise_rubin.csv, S41_nco_detail.csv, S41_evalues.csv, S41_leaveout_ranges.csv, S41_summary.md"""
+# 89g_sens_combine.py - combine sensitivity outputs.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, sys, glob, math, numpy as np, pandas as pd
 from decimal import Decimal, ROUND_HALF_UP
 TAG, VER = sys.argv[1], sys.argv[2]; SUF = f"_{VER}" if VER else ""
@@ -13,7 +13,6 @@ for v in ROB:
     a = alt[alt["cov"] == v]; ok = (a.cred & (np.sign(np.log(a.IRR)) == sgn[v])).sum()
     rows.append(dict(cov=v, kept=int(ok), n_specs=a.analysis.nunique(), IRR_main=M3.IRR[v], IRR_min=a.IRR.min(), IRR_max=a.IRR.max()))
 ret = pd.DataFrame(rows); ret.to_csv(f"{R}/S41_retention_by_cov.csv", index=False)
-# leave-out ranges
 lo = []
 for pre, lab in (("F1_drop_sido", "province"), ("F2_drop_year", "year")):
     a = P[P.analysis.str.startswith(pre)]
@@ -21,16 +20,13 @@ for pre, lab in (("F1_drop_sido", "province"), ("F2_drop_year", "year")):
         b = a[a["cov"] == v]; lo.append(dict(set=lab, cov=v, n=b.analysis.nunique(), n_cred_same_sign=int((b.cred & (np.sign(np.log(b.IRR)) == sgn[v])).sum())))
     k = a.groupby("analysis").first(); lo.append(dict(set=lab, cov="__robust_kept", n=len(k), n_cred_same_sign=f"{k.robust_kept.min()}-{k.robust_kept.max()} (median {k.robust_kept.median():g})", hotJ=f"{k.hot_jaccard_vs_main.min():.3f}-{k.hot_jaccard_vs_main.max():.3f}"))
 pd.DataFrame(lo).to_csv(f"{R}/S41_leaveout_ranges.csv", index=False)
-# Rubin pooling over noise replicates (log scale, SE from CrI width)
 N = P[P.analysis.str.startswith("G2_noise")]; rr = []
 for v in sorted(set(N["cov"])):
     b = N[N["cov"] == v]; q = np.log(b.IRR); se = (np.log(b.hi) - np.log(b.lo)) / (2 * 1.96); m = len(b)
     qb = q.mean(); W = (se ** 2).mean(); B = q.var(ddof=1); T = W + (1 + 1 / m) * B
     rr.append(dict(cov=v, m=m, IRR_pooled=round(math.exp(qb), 3), lo=round(math.exp(qb - 1.96 * math.sqrt(T)), 3), hi=round(math.exp(qb + 1.96 * math.sqrt(T)), 3), n_cred=int(b.cred.sum())))
 nz = pd.DataFrame(rr); nz.to_csv(f"{R}/S41_noise_rubin.csv", index=False)
-# comparison outcomes
 nc = P[P.analysis.str.startswith("H1_nco") & P["cov"].isin(ROB)][["analysis", "cov", "IRR", "lo", "hi", "cred"]]; nc.to_csv(f"{R}/S41_nco_detail.csv", index=False)
-# E-values (VanderWeele & Ding; RR scale, per 1 SD), from unrounded? main CSV is 3-decimal; use as given
 def ev(r):
     r = 1 / r if r < 1 else r; return r + math.sqrt(r * (r - 1))
 def r2(x): return float(Decimal(str(x)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))

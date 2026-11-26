@@ -1,4 +1,5 @@
-# american.py — J Lipid Atheroscler 원고(미국식 철자): 영국식 초안 문자열을 출력 직전에 미국식으로 바꾼다(참고문헌 서지는 원문 유지).
+# american.py - American spelling for manuscript strings.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import re
 from british import STEMS, WORDS
 REV = {v: k for k, v in WORDS.items() if v not in ("per cent", "analyses")}
@@ -8,7 +9,8 @@ REV.update({"per cent": "percent", "dyslipidaemia": "dyslipidemia", "dyslipidaem
             "enrol": "enroll", "enrolment": "enrollment", "catalogue": "catalog", "analysed": "analyzed", "analyse": "analyze", "analysing": "analyzing", "neighbouring": "neighboring",
             "labelled": "labeled", "travelled": "traveled", "colour": "color", "colours": "colors", "grey": "gray", "centre": "center", "centres": "centers", "centred": "centered",
             "specialised": "specialized", "randomised": "randomized", "recognised": "recognized", "organised": "organized", "penalised": "penalized", "summarised": "summarized",
-            "acknowledgements": "acknowledgments", "acknowledgement": "acknowledgment", "paediatric": "pediatric", "oedema": "edema", "favourable": "favorable", "behaviour": "behavior"})
+            "acknowledgements": "acknowledgments", "acknowledgement": "acknowledgment", "paediatric": "pediatric", "oedema": "edema", "favourable": "favorable", "behaviour": "behavior",
+            "winsorise": "winsorize", "winsorised": "winsorized", "winsorising": "winsorizing", "winsorisation": "winsorization", "favouring": "favoring", "favours": "favors", "favour": "favor", "favoured": "favored"})
 SSTEMS = [s[:-1] + "s" for s in STEMS]
 def amer(t):
     if not t: return t

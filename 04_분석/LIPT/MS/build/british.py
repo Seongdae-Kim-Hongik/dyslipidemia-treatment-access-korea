@@ -1,4 +1,5 @@
-# british.py — Diabetic Medicine 규정(영국식 철자): 빌더가 원고·표·범례 문자열을 출력 직전에 변환한다(참고문헌 서지는 원문 유지).
+# british.py - British spelling helper.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import re
 STEMS = ["standardiz", "harmoniz", "summariz", "characteriz", "categoriz", "recogniz", "emphasiz", "minimiz", "maximiz", "prioritiz", "utiliz", "organiz",
          "randomiz", "generaliz", "normaliz", "visualiz", "hospitaliz", "urbaniz", "stabiliz", "specializ", "realiz", "finaliz", "authoriz", "localiz", "conceptualiz", "operationaliz", "penaliz", "parameteriz", "criticiz", "jeopardiz", "mobiliz", "optimiz", "hypothesiz", "emphasiz", "apologiz", "memoriz"]

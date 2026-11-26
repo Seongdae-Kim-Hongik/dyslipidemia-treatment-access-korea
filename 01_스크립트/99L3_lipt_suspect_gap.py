@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# 99L3 — 31호 LIPT 사전지정 보조 분석 「치료–의심 격차」(설계 메모 §5, 2026-11-11; 99C3_cogn_alz_gap.py 복제·수정).
-#  시군구 통합 SIR: LIPT(검진 이상지질혈증 유질환자 = 이미 치료 중, E_std) vs 검진 이상지질혈증 질환의심(미치료 이상 소견, 선별 E: LIPSA 2011-17·LIPSB 2018-24, 2018 정의 단절로 창별 E).
-#  창별(2011-17·2018-24)과 전체(창별 E 합) 모두. 산출: 04_분석/LIPT/results_std3/S50_lipt_suspect_gap.csv · S50_lipt_suspect_gap_summary.json
+# 99L3_lipt_suspect_gap.py - treated versus suspected dyslipidemia.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, json, unicodedata, numpy as np, pandas as pd
 from scipy.stats import spearmanr
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE); AN = os.path.join(ROOT, "04_분석"); PAN = os.path.join(ROOT, "02_패널")
@@ -25,7 +24,7 @@ for ln in L[1:]:
 regs = list(G.region); W = np.zeros((n, n))
 for i in range(n):
     if NB[i]: W[i, NB[i]] = 1 / len(NB[i])
-def moran(y):   # 관측 없는 지역(세종) 제외 부분 행렬, 행 재표준화
+def moran(y):
     ok = ~np.isnan(y); Wk = W[np.ix_(ok, ok)].copy(); rs = Wk.sum(1); Wk[rs > 0] /= rs[rs > 0, None]; v = y[ok]
     f = lambda u: (len(u) / Wk.sum()) * ((u - u.mean()) @ Wk @ (u - u.mean())) / ((u - u.mean()) @ (u - u.mean()))
     I = f(v); rng = np.random.default_rng(20261111); Ip = np.array([f(rng.permutation(v)) for _ in range(999)]); return I, (np.sum(Ip >= I) + 1) / 1000

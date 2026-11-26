@@ -1,8 +1,5 @@
-# 88L — 31호 LIPT 역방향 사후 검정(after results were seen; 주분석 불변, 보충표 전용). 2026-11-11 신규(88C 복제·수정, 원본 수정 없음).
-#  역방향: 내과 전문의/10만(가설 +, 관측 −).
-#  P0 주모형 · P1 +미충족의료·고혈압/당뇨 진단 비중 · P2 단독(+강제) · P3a 의사/1000 제외(같은 축) · P3b 대졸·도시 비중 축 제외 대신 대졸 제외 ·
-#  P4 지역 간·지역 내 분해 · P5 면적당(log, 분모 효과) 대체 · P5b 인구당+면적당 동시
-#  사용(01_스크립트/): TAG=LIPT ST_VER=std3 ST_GRAPH=<graph_593> ./rslot.sh Rscript 88L_lipt_reverse_posthoc.R → results_std3/S46_lipt_posthoc.csv
+# 88L_lipt_reverse_posthoc.R - post hoc examination of specialist density.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 suppressPackageStartupMessages({library(INLA);library(sf);library(jsonlite)})
 TAG<-Sys.getenv("TAG","LIPT");VER<-Sys.getenv("ST_VER","std3");inla.setOption(num.threads="1:1")
 OUTD<-file.path("..","04_분석",TAG);RES<-file.path(OUTD,paste0("results_",VER))

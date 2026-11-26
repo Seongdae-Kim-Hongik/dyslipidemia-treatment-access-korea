@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# 82 — 핵심 보고서(552 포맷: 영문 캡션 볼드 → 표/그림 → 영문 범례 → 한글 요지 1줄 ≤480자; 모든 수치 CSV 연동). 사용: python3 82_core_report.py <TAG> <YYMMDD>
-#  입력: 04_분석/<TAG>/panel_*, panel_META_*, panel_INFO_*, sets_*.json, HM_setcompare_*, HM_best_*, results/S1~S9 CSV, 지도 final.shp
-#  산출: 04_분석/<TAG>/<날짜>_<TAG>_핵심.docx / .pdf (soffice), figs/ PNG
+# 82L_core_report_nwin.py - core result report.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import sys, os, json, re, subprocess, unicodedata
 import numpy as np, pandas as pd
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt; import matplotlib.font_manager as fm
@@ -10,7 +9,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SHP = os.environ.get("ST_SHP", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "boundary", "final.shp"))
 SOFFICE = "/opt/homebrew/bin/soffice"
 TAG, DATE = sys.argv[1], sys.argv[2]
-VER = os.environ.get("ST_VER", "").strip(); SUF = f"_{VER}" if VER else ""   # 버전 분기(ST_VER=v2 → *_v2 입력·results_v2/·figs_v2/·핵심_v2)
+VER = os.environ.get("ST_VER", "").strip(); SUF = f"_{VER}" if VER else ""
 OUTD = os.path.join(ROOT, "04_분석", TAG); RES = os.path.join(OUTD, "results" + SUF); FIG = os.path.join(OUTD, "figs" + SUF); os.makedirs(FIG, exist_ok=True)
 S = json.load(open(os.path.join(OUTD, f"config_{TAG}{SUF}.json"), encoding="utf-8")); RU = S["rules"]
 INFO = json.load(open(os.path.join(OUTD, f"panel_INFO_{TAG}{SUF}.json"), encoding="utf-8"))
@@ -39,12 +38,10 @@ lab = lambda v: f"{META.loc[v,'label_en']} ({META.loc[v,'label_ko']})"
 def ci(r, k="IRR"): return f"{r[k]:.3f} ({r['lo']:.3f}-{r['hi']:.3f})"
 WINS = INFO["windows"]; WN = list(WINS.keys()); WY = {k: f"{v[0]}-{v[1]}" for k, v in WINS.items()}
 
-# ── 폰트 ──
 KF = next((f for f in ["AppleGothic", "Nanum Gothic", "Apple SD Gothic Neo"] if f in {x.name for x in fm.fontManager.ttflist}), "DejaVu Sans")
 plt.rcParams.update({"font.family": KF, "axes.unicode_minus": False, "font.size": 9})
 DOCF = "Nanum Gothic" if "Nanum Gothic" in {x.name for x in fm.fontManager.ttflist} else "AppleGothic"
 
-# ── 그림 1: 연도 추세(전국 조율 + 시군구 분위 띠) ──
 if "offset" not in P.columns: P["offset"] = P.population
 P["rate"] = P.cases / P.offset * 1e5; OFFC = INFO.get("offset_column", "population"); DENOM = "residents" if OFFC == "population" else f"denominator ({OFFC})"
 nat = P.groupby("year")[["cases","offset"]].sum().pipe(lambda g: g.cases / g.offset * 1e5)
@@ -59,7 +56,6 @@ ax.axvline(INFO["covid_post_from"] - 0.5, color="#555555", lw=0.8, ls="-.")
 ax.set_xlabel("Year"); ax.set_ylabel(f"Cases per 100,000 {DENOM}"); ax.set_xticks(list(nat.index)); ax.tick_params(axis="x", labelsize=8); ax.legend(fontsize=7, frameon=False); ax.spines[["top", "right"]].set_visible(False)
 fig.tight_layout(); F1 = os.path.join(FIG, "fig1_trend.png"); fig.savefig(F1, dpi=200); plt.close(fig)
 
-# ── 그림 2: 공간 RR 지도 + 초과확률 지도 ──
 import geopandas as gpd
 G = gpd.read_file(SHP); G["region"] = G["region"].map(lambda s: unicodedata.normalize("NFC", str(s)))
 RR["fbd_region"] = RR["fbd_region"].map(lambda s: unicodedata.normalize("NFC", str(s)))
@@ -75,7 +71,6 @@ from matplotlib.patches import Patch
 axs[1].legend(handles=[Patch(color=cmap[k], label=f"{k} (n={int((GM['class']==k).sum())})") for k in ["hotspot", "coldspot", "neutral", "unobserved"] if (GM["class"] == k).any()], fontsize=7, frameon=False, loc="lower left")
 fig.tight_layout(); F2 = os.path.join(FIG, "fig2_map.png"); fig.savefig(F2, dpi=200); plt.close(fig)
 
-# ── 그림 3: 창별 IRR 포리스트(가설 변수, 라벨 English (한글)) ──
 WH = WIN[WIN.role == "hypothesis"].copy(); WH["ord"] = WH['cov'].map({v: i for i, v in enumerate(HYPV)}); WH = WH.sort_values(["ord", "window"])
 fig, ax = plt.subplots(figsize=(7.5, 0.55 * len(HYPV) + 1.4))
 _M=["o","s","^","D"]; _n=len(WN); mk={w:_M[i] for i,w in enumerate(WN)}; off={w:(0.22-0.44*i/(_n-1) if _n>1 else 0) for i,w in enumerate(WN)}
@@ -89,7 +84,6 @@ ax.axvline(1, color="#555555", lw=0.8, ls="--"); ax.set_yticks(range(len(HYPV)))
 ax.set_xlabel("IRR per +1 SD (95% CrI)"); ax.legend(fontsize=7, frameon=False, loc="lower right"); ax.spines[["top", "right"]].set_visible(False)
 fig.tight_layout(); F3 = os.path.join(FIG, "fig3_window_forest.png"); fig.savefig(F3, dpi=200); plt.close(fig)
 
-# ── docx 헬퍼 ──
 doc = Document()
 for s in doc.sections: s.left_margin = s.right_margin = Cm(2.0); s.top_margin = s.bottom_margin = Cm(2.0)
 st = doc.styles["Normal"]; st.font.name = DOCF; st.font.size = Pt(10); st.element.rPr.rFonts.set(qn("w:eastAsia"), DOCF)
@@ -104,7 +98,7 @@ def LEG(t): para(t, sz=8.5, after=3)
 def YOJI(t, alt=None):
     t = re.sub(r"\s+", " ", str(t)).strip()
     if len(t) > 480 and alt is not None: t = re.sub(r"\s+", " ", str(alt)).strip(); print(f"[82] 요지 압축형 사용({len(t)}자)")
-    if len(t) > 480:  # 3단계 압축: 괄호 안 구간 제거 → 열거 항목 축약(앞 3개 + 외 n개) → 문장 단위 절단
+    if len(t) > 480:
         t2 = re.sub(r"\([^()]*\)", "", t); t2 = re.sub(r"\s+", " ", t2).replace(" ,", ",").strip()
         if len(t2) > 480:
             parts = re.split(r"(?<=[.;])\s", t2); acc = ""
@@ -129,10 +123,9 @@ def TBL(hdr, rows, widths, fs=8.0, cat_rows=()):
 def FIGI(path, wcm=16.5): doc.add_picture(path, width=Cm(wcm)); doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
 yn = lambda b: "Yes" if bool(b) else "No"
 
-# ── 표지 ──
 para(f"{DKO}({DEN}) 시군구 시공간 결정요인 분석 핵심 보고서", sz=14, b=True, after=2)
 para(f"Spatio-temporal determinants of {DEN.lower()} across {INFO['n_sgg']} Korean districts, {INFO['years'][0]}-{INFO['years'][1]} (core report, {DATE})", sz=10, after=8)
-EXTE = INFO.get("offset_E_column")   # PLAN R10: 외부 E(간접 연령표준화) 사용 여부
+EXTE = INFO.get("offset_E_column")
 if VER: para(f"version {VER}" + ("(간접 연령표준화 기대건수 E 주분석)" if EXTE else "(기전 기반 축소 풀)"), sz=10, after=8)
 imp = META[["n_imputed_interp", "n_imputed_sgg_mean", "n_imputed_year_mean"]].sum()
 vifd = META[META.vif_dropped == True].index.tolist(); vifo = META[META.vif_over_threshold_retained == True].index.tolist(); lowc = META[META.low_coverage == True].index.tolist()
@@ -151,7 +144,6 @@ cover = [
  ("Config", f"{S['source_json']} fixed {S.get('fixed_on','')}; {S.get('note','')[:160]}")]
 TBL(["Item", "Specification"], cover, [3.2, 13.3], fs=8)
 
-# ── Table 1 ──
 SEC("Table 1. Period characteristics and treated-patient rates")
 CAP(f"Table 1. District-year characteristics and {DEN.lower()} treated-patient rate per 100,000 by period")
 rows = []; t1 = {}
@@ -176,7 +168,6 @@ LEG(f"Rates are cases per 100,000 {DENOM} (crude). District rate = district-year
 w3, w1 = t1[WN[-1]], t1[WN[0]]
 YOJI(f"{DKO} 진료실인원 조율은 {WY[WN[0]]} {w1['rate']:,.1f}/10만에서 {WY[WN[-1]]} {w3['rate']:,.1f}/10만으로 변했고(전체 {allr['rate']:,.1f}/10만, 총 {allr['cases']:,.0f}명·{allr['n']:,} 시군구-연도), 시군구 중앙값은 {w1['med']:,.1f}→{w3['med']:,.1f}, 범위 {w3['mn']:,.1f}-{w3['mx']:,.1f}({WY[WN[-1]]}).")
 
-# ── Table 2 ──
 SEC("Table 2. Determinants: set comparison and principal model")
 CAP("Table 2a. Comparison of pre-specified covariate sets (principal likelihood, same forced controls)")
 C = CMP.copy()
@@ -204,12 +195,11 @@ phi = HYP[HYP.hyperpar.str.contains("Phi")].iloc[0]
 LEG(f"IRR per 1 SD increase of the standardised covariate, offset log E. Credible = 95% CrI excludes 1. Expected = pre-specified direction. WAIC of this refit {MFIT.WAIC:,.1f} (Table 2a value is from the set-comparison fit; INLA refits of the same model differ by a few WAIC units), DIC {MFIT.DIC:,.1f}, BYM2 mixing parameter phi {phi['mean']:.3f} ({phi['X0.025quant']:.3f}-{phi['X0.975quant']:.3f}). Residual Moran's I of district-mean Pearson residuals {MFIT.resid_moran_I:.3f} (permutation P {MFIT.resid_moran_p:.3f}); observed pooled log-SIR Moran's I {MFIT.obs_moran_I:.3f} (P {MFIT.obs_moran_p:.3f}). Negative-control IRRs are from separate models each adding one control.")
 ch = MAIN[(MAIN.role == "hypothesis") & MAIN.cred]; nh = MAIN[(MAIN.role == "hypothesis") & ~MAIN.cred]
 ctxt = "; ".join(f"{META.loc[r.cov,'label_ko']} {r.IRR:.3f}({r.lo:.3f}-{r.hi:.3f})" for r in ch.itertuples()) or "없음"
-ctxt_s = '; '.join(f"{KO(r.cov)} {r.IRR:.3f}" for r in ch.itertuples()) or '없음'   # 480자 초과 시 압축형(CI는 표에)
+ctxt_s = '; '.join(f"{KO(r.cov)} {r.IRR:.3f}" for r in ch.itertuples()) or '없음'
 negtxt = "; ".join(f"{META.loc[r.cov,'label_ko']} {r.IRR:.3f}({r.lo:.3f}-{r.hi:.3f})" for r in NEG.itertuples()) if len(NEG) else "없음"
 YOJI(f"주모형(가설 {len(HYPV)}·강제통제 {len(FORCED)}) credible 가설 변수 {len(ch)}개: {ctxt}; 비credible {len(nh)}개({', '.join(KO(v) for v in nh['cov']) or '없음'}). 음성대조 {negtxt}(credible {int(NEG.cred.sum()) if len(NEG) else 0}개). 잔차 Moran I {MFIT.resid_moran_I:.3f}(P {MFIT.resid_moran_p:.3f}).",
      alt=f"주모형(가설 {len(HYPV)}·강제통제 {len(FORCED)}) credible 가설 변수 {len(ch)}개(IRR; CrI는 표): {ctxt_s}; 비credible {len(nh)}개. 음성대조 credible {int(NEG.cred.sum()) if len(NEG) else 0}/{len(NEG)}({negtxt}). 잔차 Moran I {MFIT.resid_moran_I:.3f}(P {MFIT.resid_moran_p:.3f}).")
 
-# ── Figure 1 ──
 SEC("Figure 1. Annual trend")
 CAP(f"Figure 1. National crude rate and district distribution of {DEN.lower()} treated patients per 100,000, {INFO['years'][0]}-{INFO['years'][1]}")
 FIGI(F1, 15)
@@ -217,7 +207,6 @@ LEG("Black line = national crude rate (sum of cases / sum of population). Dark b
 ymax, ymin = nat.idxmax(), nat.idxmin(); mo = MOR.sort_values("moran_I", ascending=False).iloc[0]
 YOJI(f"전국 조율은 {int(nat.index[0])}년 {nat.iloc[0]:,.1f}/10만에서 {int(nat.index[-1])}년 {nat.iloc[-1]:,.1f}/10만(최저 {int(ymin)}년 {nat.min():,.1f}, 최고 {int(ymax)}년 {nat.max():,.1f}); 시군구 10-90분위 폭은 {int(q.index[0])}년 {q[0.9].iloc[0]-q[0.1].iloc[0]:,.1f}에서 {int(q.index[-1])}년 {q[0.9].iloc[-1]-q[0.1].iloc[-1]:,.1f}. 연도별 관측 log SIR Moran I 최대 {mo.moran_I:.3f}({int(mo.year)}년, P {mo.p_perm:.3f}).")
 
-# ── Figure 2 ──
 SEC("Figure 2. Spatial relative risk and hotspots")
 CAP("Figure 2. District-level spatial relative risk (BYM2 total effect, principal model) and exceedance classification")
 FIGI(F2, 16.5)
@@ -225,7 +214,6 @@ LEG(f"A: exp of the BYM2 total spatial effect after adjustment for all principal
 RRo = RR[RR["class"] != "unobserved"] if "class" in RR.columns else RR; top = RRo.sort_values("RR", ascending=False).head(5); bot = RRo.sort_values("RR").head(5)
 YOJI(f"공변량·연도 보정 후 공간 RR은 {MFIT.RR_min:.3f}-{MFIT.RR_max:.3f}, 핫스팟 {int(MFIT.n_hotspot)}곳·콜드스팟 {int(MFIT.n_coldspot)}곳({int(MFIT.n_regions)}구 중" + (f", 미관측 {len(INFO.get('unobserved_regions', []))}구 제외" if INFO.get('unobserved_regions') else "") + f"). RR 상위 5: {', '.join(f'{r.fbd_region} {r.RR:.3f}' for r in top.itertuples())}; 하위 5: {', '.join(f'{r.fbd_region} {r.RR:.3f}' for r in bot.itertuples())}.")
 
-# ── Figure 3 ──
 SEC("Figure 3. Determinants by window")
 CAP(f"Figure 3. Window-specific IRR per +1 SD of hypothesis variables ({', '.join(f'{w} = {WY[w]}' for w in WN)}; separate refits of the principal model)")
 FIGI(F3, 15.5)
@@ -240,7 +228,6 @@ _allw = [v for v in HYPV if all(bool(WH[(WH['cov'] == v) & (WH.window == wn)].cr
 YOJI("창별 재적합: " + "; ".join(wtxt) + f". 창×변수 상호작용 credible {len(icr)}/{len(INT)}" + (f"({'; '.join(f'{KO(r.cov)}×{r.window} {r.IRR_ratio:.3f}' for r in icr.itertuples())})" if len(icr) else "") + ".",
      alt=f"창별 재적합(가설 {len(HYPV)}개): {_wshort}; 세 창 모두 credible {len(_allw)}개({', '.join(KO(v) for v in _allw) or '없음'}). 창×변수 상호작용 credible {len(icr)}/{len(INT)}(수치는 Table S4).")
 
-# ── 보충 ──
 SEC("Supplementary analyses")
 CAP(f"Table S1. Multiverse robustness: {int(MV.n_specs_total.iloc[0])} random covariate specifications (forced controls fixed, each candidate included with probability 0.5)")
 rows = [[lab(r.cov), yn(r.in_main_set), f"{int(r.n_specs)}", f"{100*r.cred_frac:.1f}", f"{100*r.sign_agree:.1f}", f"{r.IRR_median:.3f} ({r.IRR_min:.3f}-{r.IRR_max:.3f})", ("Robust" if r.robust else "Not robust") + (" (provisional, n<50)" if r.provisional else "")] for r in MV.sort_values("cred_frac", ascending=False).itertuples()]
@@ -286,7 +273,7 @@ LEG("Observed SIR = cases / E with 0.5 added to cases before the log; queen cont
 YOJI(f"관측 log SIR Moran I는 {MOR.moran_I.min():.3f}({int(MOR.loc[MOR.moran_I.idxmin(),'year'])}년)-{MOR.moran_I.max():.3f}({int(MOR.loc[MOR.moran_I.idxmax(),'year'])}년), 전 연도 P {MOR.p_perm.max():.3f} 이하; 주모형 잔차 Moran I {MFIT.resid_moran_I:.3f}(P {MFIT.resid_moran_p:.3f}).")
 
 if OS is not None:
-    PLAB = INFO.get("offset_E_label") or OFFC   # 주분석 E 이름(외부 E면 E_std)
+    PLAB = INFO.get("offset_E_label") or OFFC
     CAP(f"Table S6. Denominator sensitivity: principal model refitted with E based on {INFO['offset_sensitivity']} instead of {PLAB}")
     rows = []
     for r in MAIN[MAIN.role == "hypothesis"].itertuples():
@@ -296,7 +283,6 @@ if OS is not None:
     same = sum(bool(MAIN[MAIN['cov'] == v].cred.iloc[0]) == bool(OS[OS['cov'] == v].cred.iloc[0]) for v in HYPV)
     YOJI(f"분모를 {INFO['offset_sensitivity']}로 바꿔도 가설 변수 credible 판정 일치 {same}/{len(HYPV)}.")
 
-# ── 한계 ──
 SEC("Analysis limitations")
 lim = [
  f"① 종속변수는 진료실인원(의료 이용)이므로 유병의 대리지표이며, 요양기관 밀도를 강제통제했어도 접근성·수진 행태 교란이 남는다.",
@@ -313,7 +299,6 @@ if lowc: lim.append(f"⑩ 관측 비율 70% 미만 변수({', '.join(f'{KO(v)} {
 if "PILOT" in S.get("note", "").upper(): lim.append("⑪ 이번 판은 파이프라인 파일럿용 임시 공변량 풀로, 문헌 기반 sets json 교체 후 재실행한 결과로 대체되어야 한다.")
 for t in lim: para(t, sz=9, after=2)
 
-# ── α 요약 ──
 SEC("α summary")
 rbtxt = ", ".join(META.loc[v, "label_ko"] for v in rb['cov']) or "없음"
 alpha = [
@@ -325,7 +310,6 @@ alpha = [
 ]
 for t in alpha: para(t, sz=9.5, after=2)
 
-# ── 최종 요지 ──
 SEC("최종 요지")
 _fin = lambda c: f"{INFO['n_sgg']}개 시군구 {INFO['years'][0]}-{INFO['years'][1]}년 {DKO} 진료실인원({allr['cases']:,.0f}명)을 {FAMN[MAINFAM]} BYM2 시공간 모형으로 분석한 결과, 주모형 세트 {BESTSET}에서 credible 가설 변수는 {len(ch)}개({c}), 다중우주 강건 {len(rb)}개({rbtxt}), 핫스팟 {int(MFIT.n_hotspot)}·콜드스팟 {int(MFIT.n_coldspot)}곳, 창×변수 상호작용 credible {len(icr)}/{len(INT)}, 음성대조 credible {int(NEG.cred.sum()) if len(NEG) else 0}/{len(NEG)}."
 YOJI(_fin(ctxt), alt=_fin(ctxt_s))

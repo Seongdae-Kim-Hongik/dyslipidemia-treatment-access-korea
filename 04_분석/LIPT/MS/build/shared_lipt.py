@@ -1,4 +1,5 @@
-# shared_lipt.py — 31호 LIPT 원고 공용 상수: 참고문헌 문장형 표제(서지 대조 완료본), 표 1 공변량, 표 2 묶음·라벨, 그림 범례(2026-11-16).
+# shared_lipt.py - shared labels, sources and table helpers.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 TFIX = {"rhee2019guidelines": "2018 guidelines for the management of dyslipidemia in Korea","kang2015korea": "Korea Community Health Survey data profiles",
         "heidari2016sex": "Sex and gender equity in research: rationale for the SAGER guidelines and recommended use",
         "kwon2025dyslipidemia": "Dyslipidemia fact sheet in South Korea, 2024",
@@ -26,7 +27,7 @@ TFIX = {"rhee2019guidelines": "2018 guidelines for the management of dyslipidemi
 
 TAB1_COV = [("pop80_share", "Population aged 80 years or older, %"), ("tertiary_educated_share", "Tertiary education, % of adults"),
             ("im_specialists_per_100k", "Internal-medicine specialists per 100,000"), ("screening_uptake", "Health-screening uptake, %"),
-            ("obesity_rate", "Obesity, %"), ("walking_practice_rate", "Walking practice, %"), ("moderate_pa_rate", "Moderate or vigorous activity, %"),
+            ("obesity_rate", "Obesity, %"), ("walking_practice_rate", "Walking practice, %"), ("moderate_pa_rate", "Moderate-to-vigorous activity, %"),
             ("public_sports_facilities_per_100k", "Public sports facilities per 100,000")]
 
 GROUPS = [("Care reach and selection", ["im_specialists_per_100k", "screening_uptake", "tertiary_educated_share"]),
@@ -35,13 +36,56 @@ GROUPS = [("Care reach and selection", ["im_specialists_per_100k", "screening_up
           ("Forced controls", ["urban_population_share", "physicians_per_1000", "sex_ratio", "fiscal_independence", "pop80_share"])]
 LABEL = {"im_specialists_per_100k": "Internal-medicine specialists", "screening_uptake": "Health-screening uptake", "tertiary_educated_share": "Tertiary education",
          "obesity_rate": "Obesity", "high_risk_drinking_rate": "High-risk drinking", "current_smoking_rate": "Current smoking", "walking_practice_rate": "Walking practice",
-         "moderate_pa_rate": "Moderate or vigorous activity", "public_sports_facilities_per_100k": "Public sports facilities", "basic_livelihood_rate": "Basic livelihood security",
+         "moderate_pa_rate": "Moderate-to-vigorous activity", "public_sports_facilities_per_100k": "Public sports facilities", "basic_livelihood_rate": "Basic livelihood security",
          "single_person_household_share": "Single-person households", "urban_population_share": "Urban population share", "physicians_per_1000": "Physicians per 1,000",
          "sex_ratio": "Sex ratio", "fiscal_independence": "Fiscal autonomy", "pop80_share": "Aged 80 years or older"}
 
 FIGCAP = {
  1: ("Geography of treated dyslipidaemia and its relation to suspected dyslipidaemia among health-screening attendees, Korea, 2011–2024.",
-     "(A) Residual spatial rate ratio (RR) by district, the posterior mean of the exponentiated Besag–York–Mollié 2 district effect from the principal model. Solid outlines, hot spots (posterior probability of residual spatial RR above 1 greater than 0.95); dashed outlines, cold spots (less than 0.05); thick lines, province boundaries; grey, no data (Sejong). (B) Districts classified by whether the sex- and age-standardised ratios of treated and of suspected untreated dyslipidaemia for 2011–2024 exceeded 1. District boundaries as of 2024."),
- 2: ("Rate ratios for the three subset-stable district characteristics across models.",
-     "Rate ratios per 1 standard deviation with 95% credible intervals from the principal model, models with Knorr-Held type II (best fitting) and type IV space–time interactions, the principal model fitted to 2011–2017 and to 2018–2024 only, and the principal model with expected numbers computed from residents instead of attendees. The dotted vertical line marks a rate ratio of 1."),
+     "(A) Residual spatial rate ratio (RR) by district, the posterior mean of the exponentiated Besag–York–Mollié 2 district effect from the principal model, in six fixed classes. Solid outlines, covariate-adjusted residual hot spots (posterior probability that the residual spatial RR exceeded 1 above 0.95); dashed outlines, cold spots (below 0.05); thick lines, province boundaries. (B) Districts classified by whether the sex- and age-standardised ratios of treated dyslipidaemia and of suspected untreated dyslipidaemia (the screening judgement of suspected disease) for 2011–2024 exceeded 1. In both panels, numbers in parentheses are districts; no data, Sejong, published only as a province-level row and excluded; the bar shows 0, 50 and 100 km and the triangle points north. District boundaries as of 2024."),
+ 2: ("Rate ratios for the three subset-stable district characteristics in the space–time, calendar-window and resident-denominator models.",
+     "Symbols show rate ratios per 1 standard deviation (SD) and lines their 95% credible intervals (CrIs) from models with Knorr-Held type II (best fitting) and type IV space–time interactions, the principal model fitted to 2011–2017 and to 2018–2024 only, and the principal model with expected numbers computed from residents instead of attendees; the numbers on the right repeat each estimate. Filled symbols, CrI excludes 1; open symbols, CrI includes 1; intervals with a bound shown as 1.000 were classified from unrounded values. The shaded band and the vertical line within it mark the principal-model CrI and estimate, which are given in Table 2. The dotted vertical line marks a rate ratio of 1."),
 }
+
+SRCEN = {
+ "urban_population_share": ("Statistics Korea e-Local Indicators, urban-zone population", "2011–2024"),
+ "physicians_per_1000": ("Statistics Korea e-Local Indicators, physicians in medical institutions", "2011–2024"),
+ "sex_ratio": ("Statistics Korea e-Local Indicators, resident registration", "2011–2024"),
+ "fiscal_independence": ("Statistics Korea e-Local Indicators, local finance", "2011–2024"),
+ "pop80_share": ("Resident registration population by 5-year age group", "2011–2024"),
+ "im_specialists_per_100k": ("Health Insurance Review and Assessment Service, specialists by district", "2011–2024"),
+ "screening_uptake": ("National Health Insurance Service, health screening statistics", "2011–2024"),
+ "tertiary_educated_share": ("Statistics Korea Population and Housing Census†", "2010, 2015, 2020"),
+ "obesity_rate": ("Korea Disease Control and Prevention Agency Community Health Survey‡", "2011–2024 except 2019"),
+ "high_risk_drinking_rate": ("Community Health Survey‡", "2011–2024"),
+ "current_smoking_rate": ("Community Health Survey‡", "2011–2024"),
+ "walking_practice_rate": ("Community Health Survey‡", "2011–2024"),
+ "moderate_pa_rate": ("Community Health Survey‡", "2011–2024 except 2018"),
+ "public_sports_facilities_per_100k": ("Ministry of Culture, Sports and Tourism, national public sports facilities", "2011–2024"),
+ "basic_livelihood_rate": ("Ministry of Health and Welfare, basic livelihood security recipients", "2011–2024"),
+ "single_person_household_share": ("Statistics Korea e-Local Indicators, census-based households", "2015–2024"),
+}
+UNIT = {"urban_population_share": "% of residents", "physicians_per_1000": "per 1,000 residents", "sex_ratio": "men per 100 women", "fiscal_independence": "% of budget", "pop80_share": "% of residents",
+        "im_specialists_per_100k": "per 100,000 residents", "screening_uptake": "% of invited people", "tertiary_educated_share": "% of adults", "obesity_rate": "% of respondents", "high_risk_drinking_rate": "% of respondents",
+        "current_smoking_rate": "% of respondents", "walking_practice_rate": "% of respondents", "moderate_pa_rate": "% of respondents", "public_sports_facilities_per_100k": "per 100,000 residents",
+        "basic_livelihood_rate": "% of residents", "single_person_household_share": "% of households"}
+assert set(SRCEN) == set(LABEL) == set(UNIT) and len(SRCEN) == 16
+
+TFIX.update({"jin2023dyslipidemia": "Dyslipidemia fact sheet in South Korea, 2022",
+ "kang2022current": "Current status of the national health screening programs in South Korea",
+ "oh2026validation": "Validation of self-reported disease history in Korea: a National Health Insurance cohort study",
+ "kim2017evaluation": "Evaluation of geographic indices describing health care utilization",
+ "kim2018prevalence": "Prevalence of overweight and income gaps in 245 districts of Korea: comparison using the National Health Screening Database and the Community Health Survey, 2009-2014",
+ "korhonen2020lifestyle": "Lifestyle changes in relation to initiation of antihypertensive and lipid-lowering medication: a cohort study",
+ "park2021association": "Association of participation in health check-ups with risk factors for cardiovascular diseases",
+ "yun2023socioeconomic": "Socioeconomic disparities in the association between all-cause mortality and health check-up participation among healthy middle-aged workers: a nationwide study"})
+
+SRCAB = {"urban_population_share": "e-LI", "physicians_per_1000": "e-LI", "sex_ratio": "e-LI", "fiscal_independence": "e-LI", "pop80_share": "RRP",
+         "im_specialists_per_100k": "HIRA", "screening_uptake": "NHIS", "tertiary_educated_share": "Census†", "obesity_rate": "KCHS‡",
+         "high_risk_drinking_rate": "KCHS‡", "current_smoking_rate": "KCHS‡", "walking_practice_rate": "KCHS‡", "moderate_pa_rate": "KCHS‡",
+         "public_sports_facilities_per_100k": "MCST", "basic_livelihood_rate": "MOHW", "single_person_household_share": "e-LI"}
+YRAB = {"tertiary_educated_share": "2010–20", "obesity_rate": "2011–24§", "moderate_pa_rate": "2011–24§", "single_person_household_share": "2015–24"}
+SRC_FOOT = ("e-LI, Statistics Korea e-Local Indicators; RRP, resident registration population; HIRA, Health Insurance Review and Assessment Service; NHIS, National Health Insurance Service health screening statistics; "
+            "Census, Statistics Korea Population and Housing Census; KCHS, Korea Disease Control and Prevention Agency Community Health Survey; MCST, Ministry of Culture, Sports and Tourism national public sports facilities; "
+            "MOHW, Ministry of Health and Welfare basic livelihood security recipients.")
+assert set(SRCAB) == set(LABEL)

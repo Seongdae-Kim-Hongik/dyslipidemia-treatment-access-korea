@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
-# 99L2 — 31호 LIPT(검진 이상지질혈증 유질환자 = 이미 진단·치료 중인 이상지질혈증) 성·연령 간접표준화 E (2026-11-11; 99U2_build_Estd3_undx.py 복제·수정, 원본 수정 없음).
-#  cases  = 시군구 일반건강검진 판정 '유질환자 - 이상지질혈증'(문진상 이미 진단·약물치료 중) 인원(KOSIS DT_35007_N105 '이상지질혈증' = 기준 SQLite·MASTER chk__유질환자_이상지질혈증).
-#           SQLite·MASTER는 하위 구만 있는 일반구 시 7칸이 빈칸 → 여기서는 N105 시군구 성별 행을 50 매핑 규칙으로 직접 합한다(겹치는 칸은 차이 ≤2 검산).
-#  offset = 시군구 일반건강검진 판정 수검자(DT_35007_N098 '계', 성별 실측) — 26호 COGN과 같은 '수검자 분모' 설계.
-#  전국 성(2)×16연령: 분모 DT_35007_N099 '계', 분자 DT_35007_N106 '이상지질혈증'(00304) (99N_fetch_lipt_age_sex.py).
-#  시군구 수검자 연령 구조: 시군구×연령 수검자 표가 없다 → 99U2와 같은 근사(주민등록 성×5세 인구 × 전국 성·연령 수검률, (d,y,s)별 실측 성별 수검자로 재척도).
-#  산출: 02_패널/LIPT_Estd3.csv (year, fbd_region, examinees, cases, E_std, E_std_age, E_pop, E_crude, pop80_share_raw, uptake20, SIR_*)
-#  사용: ST_FBDZIP=<corrected population folder> python3 01_스크립트/99L2_build_Estd3_lipt.py
+# 99L2_build_Estd3_lipt.py - district counts and sex-by-age standardized expected numbers.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, sys, json, importlib.util, unicodedata
 import numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE); AN = os.path.join(ROOT, "04_분석"); PAN = os.path.join(ROOT, "02_패널")
@@ -26,7 +20,6 @@ def nb_band(a):
     if a.endswith("세") and "~" in a:
         lo, hi = a[:-1].split("~"); return f"{lo}-{hi}"
     return None
-# ── 전국 성×연령: 분모 N099 '계', 분자 N104 401/402/403 ──
 A = pd.read_csv(os.path.join(SRC, "DT_35007_N099_national_long.csv"), encoding="utf-8-sig"); A = A[(A.grp == "계") & A.year.isin(YEARS)]
 B = pd.read_csv(os.path.join(SRC, "DT_35007_N106_national_long.csv"), encoding="utf-8-sig", dtype={"grp_code": str}); B = B[B.grp_code.isin(OUTS.values()) & B.year.isin(YEARS)]
 for X in (A, B): X["band"] = X.age.map(nb_band)
@@ -40,7 +33,6 @@ for suf, code in OUTS.items():
     for s in SEXES: assert (abs(NUM[suf].xs(s, level="sex").sum(1) - bt.xs(s, level="sex")) <= 1).all(), (suf, s)
     RATE[suf] = NUM[suf] / EX
 print("[99L2] 전국 유질환자 비율(%, 성 합) 연도별:", (100 * NUM[""].groupby(level="year").sum().sum(1) / EX.groupby(level="year").sum().sum(1)).round(2).to_dict())
-# ── 시군구 성×5세 주민등록 인구(99S2 매칭 규칙 그대로) ──
 base = pd.read_csv(os.path.join(AN, "PERIO", "panel_PERIO.csv"), encoding="utf-8-sig"); base["fbd_region"] = base.fbd_region.map(NFC); base["key"] = base.key.map(NFC)
 base = base[["year", "key", "fbd_region"]].drop_duplicates()
 PKEYS = set(base.key); SIDO_HDR = {k for k in cw.SIDO_STD if len(k) >= 3 and (k.endswith("시") or k.endswith("도"))}
@@ -72,7 +64,6 @@ for y in YEARS:
             rows.append({"year": y, "sex": s, "key": NFC(key), "tot": tot, "0-19": f["15-19세"], **{b: f[b + "세"] for b in BANDS[1:-1]}, "85+": o.sum()})
 G = pd.DataFrame(rows).groupby(["year", "key", "sex"], as_index=False)[["tot"] + BANDS].sum()
 NATPOP = G.groupby(["year", "sex"])[BANDS].sum(); UPT = EX / NATPOP
-# ── 시군구 성별 수검자(N098 계)·의심(N103 401/402/403), 50 매핑 규칙(시 행이 있으면 하위 구 행 버림) ──
 L = pd.read_csv(os.path.join(PAN, "NHIS검진_시군구_연도_long.csv"), usecols=["year", "sido", "sigungu", "level", "sex", "category", "value", "tbl_id"], engine="pyarrow")
 CAT = {"계": "exam", "이상지질혈증": "c"}
 L = L[L.tbl_id.isin(["DT_35007_N098", "DT_35007_N105"]) & (L.level == "시군구") & L.year.isin(YEARS) & L.sex.isin(SEXES) & L.category.isin(CAT.keys())].copy()
@@ -86,27 +77,24 @@ SX = L.pivot_table(index=["year", "key"], columns=["v", "sex"], values="value", 
 P = base[base.year.isin(YEARS)].merge(SX.reset_index().droplevel(1, axis=1).iloc[:, :2], on=["year", "key"], how="inner") if False else None
 k = base[base.year.isin(YEARS)].set_index(["year", "key"]).index
 S = SX.reindex(k); ok = S.notna().all(axis=1) & (S[("exam", "남자")] > 0) & (S[("exam", "여자")] > 0)
-ok = ok & ~base[base.year.isin(YEARS)].reset_index(drop=True).fbd_region.eq(NFC("세종시세종시")).values   # 세종: 원표 14년 중 1년만 관측 → 20호처럼 미관측 지역(그래프에는 남음), 228곳×14년 완전 격자
+ok = ok & ~base[base.year.isin(YEARS)].reset_index(drop=True).fbd_region.eq(NFC("세종시세종시")).values
 P = base[base.year.isin(YEARS)].reset_index(drop=True)[ok.values].reset_index(drop=True); S = S[ok.values]
 assert P.groupby("fbd_region").year.nunique().eq(len(YEARS)).all() and P.fbd_region.nunique() == 228
 print(f"[99L2] 시군구-연도 {len(k)} 중 관측 {len(P)}; 제외 {sorted(set(map(tuple, base[base.year.isin(YEARS)].reset_index(drop=True)[~ok.values][['year','fbd_region']].values.tolist())))[:12]}")
 P["examinees"] = (S[("exam", "남자")] + S[("exam", "여자")]).values
 for suf in OUTS: P["cases" + suf] = (S[("c" + suf, "남자")] + S[("c" + suf, "여자")]).values
-# MASTER 검산: cases = chk__질환의심_고혈압당뇨_실인원(±2)
 MA = pd.read_parquet(os.path.join(PAN, "MASTER_시군구_연도_wide.parquet"), columns=["year", "fbd_region", "chk__유질환자_이상지질혈증"])
 MA["fbd_region"] = MA.fbd_region.map(NFC)
 c = P.merge(MA, on=["year", "fbd_region"], how="left", validate="one_to_one")
 dd = (c["cases"] - c["chk__유질환자_이상지질혈증"]).abs(); print(f"[99L2] MASTER 검산: 겹침 {int(dd.notna().sum())}칸 최대차 {dd.max():.0f}, MASTER 결측(원표 합으로 채움) {int(c['chk__유질환자_이상지질혈증'].isna().sum())}칸 {c.loc[c['chk__유질환자_이상지질혈증'].isna(), ['fbd_region','year']].values.tolist()}"); assert dd.max() <= 2
 import sqlite3
-DB = os.environ["ST_REF_SQLITE"]   # reference SQLite build of the district dataset (not included)
+DB = os.environ["ST_REF_SQLITE"]
 con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True); SQ = pd.read_sql('select year, fbd_region, "chk__유질환자_이상지질혈증" as sq from region_year where year between 2011 and 2024', con); SQ["fbd_region"] = SQ.fbd_region.map(NFC)
 c = P.merge(SQ, on=["year", "fbd_region"], how="left", validate="one_to_one"); dd = (c.cases - c.sq).abs()
 print(f"[99L2] 기준 SQLite 검산: 겹침 {int(dd.notna().sum())}칸 최대차 {dd.max():.0f}, SQLite 빈칸 {int(c.sq.isna().sum())}칸"); assert dd.max() <= 2
-# 시군구 합 / 전국(성 합) 비
 nat_ex = EX.groupby(level="year").sum().sum(1); nat_c = NUM[""].groupby(level="year").sum().sum(1)
 print("[99L2] 시군구 합/전국 수검자:", (P.groupby("year").examinees.sum() / nat_ex).round(3).to_dict())
 print("[99L2] 시군구 합/전국 의심:", (P.groupby("year").cases.sum() / nat_c).round(3).to_dict())
-# ── 성별 수검자 연령 구조 근사 → E ──
 cs = {suf: P.groupby("year")["cases" + suf].transform("sum").values for suf in OUTS}
 rsc = lambda e, suf: e * cs[suf] / pd.Series(e).groupby(P.year.values).transform("sum").values
 E = {suf: np.zeros(len(P)) for suf in OUTS}; EP = {suf: np.zeros(len(P)) for suf in OUTS}; EXA = 0; scs = []

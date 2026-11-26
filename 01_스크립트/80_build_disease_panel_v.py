@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
-# 80_v — (사본 2026-10-19: sets json extra_columns 로 02_패널 파일 열 병합; 나머지 원본과 동일) 질환 패널 생성 (시군구×연도, 2011~2024). 사용: python3 80_build_disease_panel.py <TAG>
-#  입력: 02_패널/MASTER_시군구_연도_wide.parquet, 04_분석/<TAG>/sets_<TAG>.json(+hypothesis_table_<TAG>.csv) → _st_config.load_config 로 정규화, 지도 final.shp(면적)
-#  처리: outcome·population·forced·세트·음성대조 변수 추출 → transform(per100k/per1k/pct_of_pop/pct_of_area/log/log1p/none)
-#        → 결측 대치(시군구 내 앞뒤 연도 선형 보간 → 시군구 평균 → 연도 전국 평균; 건수 기록) → z 표준화(전체 풀링, per 1 SD)
-#        → VIF>임계 처리(rules.vif_action: drop = 후보만 반복 제거 / report = 유지·기록) → E = population × 전국 연도별 조율
-#  외부 E(PLAN R10): sets json "offset_E_column"(예 E_std) → 02_패널/<TAG>_Estd.csv 병합해 E 대체(crude는 E_crude), "offset_E_sensitivity_column" → E_sens(81 S10)
-#  산출: 04_분석/<TAG>/config_<TAG>.json, panel_<TAG>.csv, panel_META_<TAG>.csv, panel_INFO_<TAG>.json  (ST_VER=v2 → sets_<TAG>_v2.json 입력, 모든 산출에 _v2 접미)
+# 80_build_disease_panel_v.py - analytic district-year panel for one outcome tag and version.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import sys, os, json, unicodedata
 import numpy as np, pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _st_config import load_config, ROOT, NFC, SUF   # SUF: ST_VER 버전 접미(""=v1, "_v2")
+from _st_config import load_config, ROOT, NFC, SUF
 SHP = os.environ.get("ST_SHP", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "boundary", "final.shp"))
 TAG = sys.argv[1]; OUT = os.path.join(ROOT, "04_분석", TAG)
 C = load_config(TAG); RU = C["rules"]; Y0, Y1 = RU["years"]
@@ -19,13 +14,11 @@ OFFC = C.get("offset_column", "population"); OFFS = C.get("offset_sensitivity");
 
 M = pd.read_parquet(os.path.join(ROOT, "02_패널", "MASTER_시군구_연도_wide.parquet"))
 M.columns = [NFC(c) for c in M.columns]
-# ── (_v 사본, 2026-10-19 R14) 외부 공변량 병합: sets json "extra_columns" = {"<마스터식 열 이름>": ["<02_패널 파일>", "<원본 열>"]} → M 에 (year, fbd_region) 병합 ──
 _EXT = json.load(open(os.path.join(OUT, f"sets_{TAG}{SUF}.json"), encoding="utf-8")).get("extra_columns") or {}
 for _nc, (_f, _c) in _EXT.items():
     _X = pd.read_csv(os.path.join(ROOT, "02_패널", _f), encoding="utf-8-sig")[["year", "fbd_region", _c]].rename(columns={_c: NFC(_nc)}); _X["fbd_region"] = _X.fbd_region.map(NFC)
     _n = len(M); M["fbd_region"] = M.fbd_region.map(NFC); M = M.merge(_X, on=["year", "fbd_region"], how="left", validate="many_to_one"); assert len(M) == _n
     print(f"[80v] 외부 열 병합 {NFC(_nc)} ← 02_패널/{_f}:{_c} (2011-24 비결측 {int(M.loc[(M.year >= 2011) & (M.year <= 2024), NFC(_nc)].notna().sum())}행)")
-# ── (2026-11-04) 인구 교정: sets json "population_override" = [{"year":Y,"fbd_region":R,"population":N,"source":"..."}] → M.population 대체(원 값 출력) ──
 for _o in (json.load(open(os.path.join(OUT, f"sets_{TAG}{SUF}.json"), encoding="utf-8")).get("population_override") or []):
     _m = (M.year == int(_o["year"])) & (M.fbd_region.map(NFC) == NFC(_o["fbd_region"])); assert _m.sum() == 1, _o
     print(f"[80v] 인구 교정 {_o['year']} {_o['fbd_region']}: {M.loc[_m, 'population'].iloc[0]:,.0f} → {_o['population']:,} ({_o.get('source','')})"); M.loc[_m, "population"] = float(_o["population"])
@@ -33,17 +26,15 @@ OUTC = C["outcome_column"]; assert OUTC in M.columns, f"outcome 없음: {OUTC}"
 for k in ALLV: assert V[k]["column"] in M.columns, f"마스터에 없는 열: {V[k]['column']} ({k})"
 D = M[(M.year >= Y0) & (M.year <= Y1)].sort_values(["key", "year"]).reset_index(drop=True)
 assert D.groupby("year").key.nunique().nunique() == 1, "연도별 시군구 수 불일치"
-# ── 분모(offset): population 또는 json 지정 열(METS 수검자수·BRCA 여자 인구). 결측 시 BRCA형 fallback(인구×100/(100+성비)) ──
 assert OFFC in M.columns, f"offset 열 없음: {OFFC}"
 D["offset"] = D[OFFC].astype(float); n_off_fb = 0; n_off_fb2 = 0
 if OFFC != "population" and D["offset"].isna().any():
-    if C.get("offset_fallback") == "population_by_sex_ratio":   # BRCA json fallback 1: 인구×100/(100+성비)
+    if C.get("offset_fallback") == "population_by_sex_ratio":
         sr = D["eloc__DT_1YL20701__남녀성비＜br＞(A÷B×100)"].astype(float); fb = D.population * 100 / (100 + sr)
         m_ = D["offset"].isna() & fb.notna(); n_off_fb = int(m_.sum()); D.loc[m_, "offset"] = fb[m_]
-    if D["offset"].isna().any() and not OFFC.startswith("chk__"):   # fallback 2(주민등록 계·여 결측 시군구, 예 세종): 인구 × 그해 전국 (분모/인구) 비율
+    if D["offset"].isna().any() and not OFFC.startswith("chk__"):
         ratio = D.groupby("year").apply(lambda d: d["offset"].sum() / d.loc[d["offset"].notna(), "population"].sum())
         m_ = D["offset"].isna(); n_off_fb2 = int(m_.sum()); D.loc[m_, "offset"] = (D.population * D.year.map(ratio))[m_]
-# ── 분석 행: outcome·offset 결측 행 및 제외 연도 제거(기록) ──
 drop_mask = D[OUTC].isna() | D["offset"].isna() | (D["offset"] <= 0) | D.year.isin(EXCL)
 DROPPED = D.loc[drop_mask, ["year", "key"]]; D = D[~drop_mask].reset_index(drop=True)
 YOBS = sorted(D.year.unique()); assert len(YOBS) >= 3, "분석 가능한 연도 부족"
@@ -53,17 +44,14 @@ import geopandas as gpd
 G = gpd.read_file(SHP); G["region"] = G["region"].map(NFC); D["fbd_region"] = D["fbd_region"].map(NFC)
 area = G.set_index("region").geometry.area
 assert set(D.fbd_region.unique()) <= set(area.index), "지도에 없는 fbd_region: " + str(set(D.fbd_region.unique()) - set(area.index))
-UNOBS = sorted(set(area.index) - set(D.fbd_region.unique()))   # outcome/분모 전 연도 결측으로 빠진 시군구(예: METS 세종) — 그래프에는 남고 모형에서는 미관측
+UNOBS = sorted(set(area.index) - set(D.fbd_region.unique()))
 D["area_m2"] = D.fbd_region.map(area).values
 
 out = D[["year", "key", "sido_std", "sigungu", "fbd_region", "population", "area_m2", "offset"]].copy()
 out["cases"] = D[OUTC].values
 assert out.cases.notna().all() and out.population.notna().all() and (out.population > 0).all()
-# E = offset × 전국 연도별 조율(간접표준화; offset=population이면 PLAN §0 그대로)
 nat = out.groupby("year").agg(cases=("cases", "sum"), off=("offset", "sum"), pop=("population", "sum")); nat["rate"] = nat.cases / nat["off"]; nat["rate_pop"] = nat.cases / nat["pop"]
 out["E"] = out.offset * out.year.map(nat.rate); assert abs(out.E.sum() - out.cases.sum()) < 1e-6 * out.cases.sum()
-# ── 외부 E(PLAN R10, 예 간접 연령표준화 E_std): sets json "offset_E_column" 이 있으면 02_패널/<TAG>_Estd.csv(또는 "offset_E_file")를 병합해 E 로 사용 ──
-#    crude E 는 E_crude 로 보존; "offset_E_sensitivity_column"(예 E_std_nondem) → E_sens(81 S10 분모 민감도). 분석 행 기준으로 연도별 ΣE=Σcases 재척도(간접 표준화 유지).
 EXTC = C.get("offset_E_column"); EXTS = C.get("offset_E_sensitivity_column"); EXT_INFO = {}
 if EXTC:
     assert not OFFS, "offset_sensitivity 와 offset_E_sensitivity_column 동시 지정 불가"
@@ -80,11 +68,10 @@ if EXTC:
                     E_over_Ecrude=dict((k, round(float(v), 4)) for k, v in (out.E / out.E_crude).describe()[["min", "50%", "max"]].items()))
     print(f"[80] 외부 E 사용: {EXTC} ({os.path.basename(ef)}); crude E → E_crude 보존; 민감도 E_sens = {EXTS}; E/E_crude {EXT_INFO['E_over_Ecrude']}")
 out["SIR"] = out.cases / out.E
-if OFFS and not EXTC:   # 분모 민감도(METS: population) → E_sens
+if OFFS and not EXTC:
     assert OFFS in M.columns or OFFS == "population"; os_ = D[OFFS].astype(float) if OFFS != "population" else D.population.astype(float)
     assert os_.notna().all() and (os_ > 0).all(), f"offset_sensitivity {OFFS} 결측"
     ns = out.assign(o=os_.values).groupby("year").agg(c=("cases", "sum"), o=("o", "sum")); out["E_sens"] = os_.values * out.year.map(ns.c / ns.o)
-# 창: 사전지정 창을 관측 연도에 맞춰 자르고 이름을 실제 범위로(예: METS 2013~)
 W = {}
 for wn, (a, b) in RU["windows"].items():
     yy = [y for y in YOBS if a <= y <= b]
@@ -132,7 +119,7 @@ def vif_table(cols):
         y = X[:, j + 1]; Xo = np.delete(X, j + 1, axis=1); beta, *_ = np.linalg.lstsq(Xo, y, rcond=None)
         r2 = 1 - ((y - Xo @ beta) ** 2).sum() / ((y - y.mean()) ** 2).sum(); vifs[c] = 1 / max(1 - r2, 1e-12)
     return pd.Series(vifs)
-keep = FORCED + CAND; dropped = []; TH = RU["vif_threshold"]   # 민감도 전용 변수(S1b 비만율)는 VIF 제거 루프 밖, 값만 기록
+keep = FORCED + CAND; dropped = []; TH = RU["vif_threshold"]
 if RU["vif_action"] == "drop":
     while True:
         vt = vif_table(keep); cand = vt[(vt > TH) & (~vt.index.isin(FORCED))]

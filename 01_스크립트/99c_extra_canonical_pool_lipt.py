@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
-# 99c — 31호 검진 이상지질혈증 유질환자(LIPT) 가설 풀 추가 열(2026-11-11, 99c_undx 복제; 수급률 양쪽 규칙 명시, 출력 파일만 분리). 결합 규칙(코드표, 이름 결합 금지, 군위군 37310 별칭)은 99c_perio와 같다.
-#  정본 통합자료(통합자료_261030/01_공변량_229x2011_2024.csv)
-#   im_specialists_per100k = 내과 전문의 ÷ 정본 인구 × 10만 — 가능 요인(공급)
-#   basic_livelihood_rate  = 국민기초생활보장 수급자 비율(%) — 소인(박탈). 2021-23 값이 같은 시군구 2020·2024 평균의 20% 미만 또는 5배 초과 → 결측 → 시군구 안 선형 보간(양쪽 규칙, 11/11 플레이북; 33칸)
-#   tertiary_educated_share= 대졸 이상 비율(%) — 소인(교육; 인구총조사 사이 보간·2020 이후 고정)
-#   unmet_need_rate        = KCHS 연간 미충족의료율(병의원) SR, 2011-18 DT_NECE_NOTTREAT + 2019-24 DT_117075_NECE_NTR02 이어 붙임(표 교체, 지표명 동일)
-#  산출: 02_패널/EXT_canonical_pool_LIPT_261111.csv
+# 99c_extra_canonical_pool_lipt.py - extra covariate pool joined by district code.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 import os, unicodedata
 import numpy as np, pandas as pd
 NFC = lambda s: unicodedata.normalize("NFC", str(s))
@@ -29,9 +24,7 @@ print("[99c-lipt] 5배 초과 칸", out.loc[yy & (r_ > 5), ["fbd_region", "year"
 print("[99c-lipt] 수급률 결함 칸", int(bad.sum()), sorted(out.loc[bad, "fbd_region"].unique()))
 assert bad.sum() == 33 and out.loc[bad, "fbd_region"].nunique() == 11
 out.loc[bad, "basic_livelihood_rate"] = np.nan
-# 내과 전문의 0값 13칸(신안·영양·울릉·산청·군위)은 1명↔0명 소규모 군의 실제 값으로 보고 유지(이웃 연도도 1~2명 수준) → 80에서 log1p 변환
 print("[99c-lipt] 내과 전문의 0값 칸(유지)", int((out.im_specialists_per100k <= 0).sum()))
-# KCHS 연간 미충족의료율(병의원): 2011-18 표 DT_NECE_NOTTREAT, 2019-24 표 DT_117075_NECE_NTR02(같은 지표명, 표 교체) → 이어 붙임(마스터 열, 시군구 코드 결합은 마스터가 이미 함)
 M = pd.read_parquet(os.path.join(PAN, "MASTER_시군구_연도_wide.parquet")); M.columns = [NFC(c) for c in M.columns]; M["fbd_region"] = M.fbd_region.map(NFC)
 a, b = "kchs__DT_NECE_NOTTREAT__SR", "kchs__DT_117075_NECE_NTR02__SR"
 assert M.loc[M.year.between(2019, 2024), a].isna().all() and M.loc[M.year.between(2011, 2018), b].isna().all()
@@ -48,6 +41,5 @@ assert out.groupby("fbd_region").year.nunique().eq(14).all() and out.fbd_region.
 assert out.notna().all().all(), out.isna().sum()
 fp = os.path.join(PAN, "EXT_canonical_pool_LIPT_261111.csv"); out.to_csv(fp, index=False, encoding="utf-8-sig")
 print(f"[99c-lipt] 저장 {fp} {out.shape}"); print(out.describe().T[["min", "50%", "max"]].round(2))
-# 정정 뒤 2021-23 / (2020·2024 평균) 범위 확인(양쪽 규칙 재확인)
 chk = out[yy].basic_livelihood_rate / out[yy].fbd_region.map(out[out.year.isin([2020, 2024])].groupby("fbd_region").basic_livelihood_rate.mean())
 print(f"[99c-lipt] 정정 뒤 2021-23/(2020·2024 평균) {chk.min():.2f}~{chk.max():.2f}"); assert chk.min() >= 0.2 and chk.max() <= 5

@@ -1,8 +1,5 @@
-# kh_constraints_lipt.R — kh_constraints.R 복제(2026-11-12, 31호 LIPT): 2011-2024 14년, 세종 미관측(228곳 관측, 3,192행 ≤ 229×14). 제약 행렬·rankdef 공식 불변.
-# kh_constraints.R — 성분 인식 Knorr-Held II·III·IV 행렬·제약(2026-11-04, BRCA kh_repair/kh_constraints.R에서 일반화 이식; 원 검증: final_cc2/validation.json)
-# rankdef: II = n, III = cT, IV = n + c(T-1); 성분별 inla.scale.model. 단일 노드 성분은 중단.
-# Pure matrix construction; never fits a model. Spatial order = saved graph order.
-# time-major vectorization: st = (time - 1) * n + area.
+# kh_constraints_lipt.R - constraints for the Knorr-Held models of this outcome.
+# Part of the analysis code for dyslipidemia-treatment-access-korea (v1.1.0, MIT license). See README.md (Pipeline) for how to run.
 kh_components <- function(g) {
   n <- g$n; nb <- lapply(g$nbs, as.integer)
   stopifnot(length(nb) == n)
@@ -24,8 +21,6 @@ kh_components <- function(g) {
 }
 
 kh_scale_connected <- function(R) {
-  # Explicit per-component calls preserve installed INLA scaling convention,
-  # including its numerical ridge for the constrained inverse (not added to Q).
   m <- nrow(R)
   if (m < 2L) stop("Singleton graph component requires a separately reviewed prior")
   INLA::inla.scale.model(R, constr=list(A=matrix(1, 1, m), e=0))
@@ -45,7 +40,6 @@ kh_matrices <- function(type, g, Tn) {
   Rs0 <- Matrix::Diagonal(n,g$nnbs) - Matrix::sparseMatrix(
     i=rep(seq_len(n),g$nnbs), j=unlist(g$nbs), x=1, dims=c(n,n))
   Rs <- Rs0; Rt <- Rt0
-  # II needs only temporal scaling; III needs only spatial scaling.
   if (type != "III") Rt <- kh_scale_connected(Rt0)
   if (type != "II") for (ii in cc$nodes)
     Rs[ii,ii] <- kh_scale_connected(Rs0[ii,ii,drop=FALSE])
@@ -57,7 +51,6 @@ kh_matrices <- function(type, g, Tn) {
     Q <- kronecker(Matrix::Diagonal(Tn),Rs); A <- Ac; rd <- cnum*Tn
   } else {
     Q <- kronecker(Rt,Rs)
-    # Omit the LAST time point for EVERY component, not one global row.
     A <- rbind(At,Ac[seq_len(cnum*(Tn-1L)),,drop=FALSE])
     rd <- n+cnum*(Tn-1L)
   }
@@ -67,10 +60,9 @@ kh_matrices <- function(type, g, Tn) {
 }
 
 kh_check_panel <- function(d, n, vars) {
-  # All currently authorized KH/KH4x variants retain the full 2011–2024 panel.
   stopifnot(identical(sort(unique(as.integer(d$year))),2011:2024),
             all(d$time == d$year-2010), all(d$yiid == d$time),
-            nrow(d)<=n*14L, all(d$area %in% seq_len(n)))   # (LIPT 복제본) 미관측 시군구 행 없음 허용
+            nrow(d)<=n*14L, all(d$area %in% seq_len(n)))
   st <- (d$time-1L)*n+d$area
   stopifnot(!anyDuplicated(st),all(st>=1 & st<=n*14L),
             all(is.finite(d$E)),all(d$E>0),all(is.finite(d$cases)))
@@ -84,8 +76,6 @@ kh_fit_repaired <- function(type, d, vars) {
   kh_check_panel(d,n,vars)
   z <- kh_matrices(type,g,max(d$time))
   d$st <- (d$time-1L)*n+d$area
-  # Retain the original formula environment, likelihood, E, main effects,
-  # covariates, fixed/PC priors and numerical retry settings.
   assign("KHQ",INLA::inla.as.sparse(z$Q),envir=.GlobalEnv)
   assign("KHC",list(A=z$A,e=rep(0,z$rankdef)),envir=.GlobalEnv)
   ex <- sprintf(paste0("f(st,model='generic0',Cmatrix=KHQ,rankdef=%d,",
